@@ -17,8 +17,10 @@ def create_model(vocab_size, max_sequence_length, num_units, num_layers, embeddi
         )
     ]
 
-    for _ in range(num_layers):
-        layers.append(LSTM(num_units))
+    for _ in range(num_layers - 1):
+        layers.append(LSTM(num_units, return_sequences=True))
+
+    layers.append(LSTM(num_units))
 
     layers.append(
         Dense(vocab_size, activation='softmax')
@@ -89,7 +91,7 @@ def train_model(
         batch_size=1,
         num_units=128,
         num_layers=1,
-        num_epochs=10000,
+        num_epochs=100,
         embedding_dims=128,
         sample_every_n_epochs=3
 ):
