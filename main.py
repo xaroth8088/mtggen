@@ -9,10 +9,12 @@ def main():
     parser.add_argument('--sample', action='store_true', help='Sample from a previously-trained model')
     parser.add_argument('--model_path', type=str, default='json_generator_model.keras',
                         help='Path to the model file for sampling')
+    parser.add_argument('--sample_every_n_epochs', type=int, default=3,
+                        help='Every n epochs, generate a short sample. (0 to disable)')
     args = parser.parse_args()
 
     if args.train:
-        train_model(data_path=args.train)
+        train_model(data_path=args.train, sample_every_n_epochs=args.sample_every_n_epochs)
     elif args.sample:
         sample_from_pretrained_model(
             model_path=args.model_path,

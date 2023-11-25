@@ -34,11 +34,14 @@ def create_model(vocab_size, max_sequence_length, num_units, num_layers, embeddi
     return model
 
 
-def on_epoch_end(epoch, model, vectorizer):
-    if epoch % 3 != 0:
+def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
+    if sample_every_n_epochs <= 0:
         return
 
-    print(f"\n----- Generating text after Epoch: {epoch}")
+    if (sample_every_n_epochs > 1 and epoch == 0) or epoch % sample_every_n_epochs != 0:
+        return
+
+    print(f"\n----- Generating text after Epoch: {epoch + 1}")
 
     print(generate_text("{", 100, model, vectorizer))
 
@@ -87,7 +90,8 @@ def train_model(
         num_units=128,
         num_layers=1,
         num_epochs=10000,
-        embedding_dims=128
+        embedding_dims=128,
+        sample_every_n_epochs=3
 ):
     with open(data_path, 'r', encoding='utf-8') as file:
         raw_text = np.array(file.readlines())
@@ -112,8 +116,6 @@ def train_model(
     model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
     model.summary()
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-
     data_generator = DataGenerator(raw_text, vectorizer, batch_size, max_length=max_sequence_length)
     validation_data_generator = DataGenerator(raw_text, vectorizer, batch_size, max_length=max_sequence_length,
                                               validation_split=0.2)
@@ -125,9 +127,9 @@ def train_model(
         batch_size=batch_size,
         callbacks=[
             LambdaCallback(
-                on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorizer)
+                on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs)
             ),
-            early_stopping
+            EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
         ]
     )
 
