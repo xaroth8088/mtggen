@@ -1,13 +1,17 @@
 from json import loads
+from re import findall, sub
+
 import numpy as np
+import tensorflow as tf
+from tensorflow import py_function
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping
 from tensorflow.keras.layers import Embedding, LSTM, Dense, TextVectorization
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import pad_sequences, Sequence
-from tensorflow import py_function
-import tensorflow as tf
+
+from rules_templates import rules_templates
 from sampling_module import generate_text
-from re import findall, sub
+
 
 def create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims):
     layers = [
@@ -47,7 +51,7 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
 
     print(f"\n----- Generating text after Epoch: {epoch + 1}")
 
-    print(generate_text(100, model, vectorizer))
+    print(generate_text(100, model, vectorizer, 0.1, True))
 
 
 class DataGenerator(Sequence):
@@ -100,6 +104,9 @@ def custom_splitter(text):
             retval.append(tokens)
             continue
 
+        # TODO: explode out the \w+|\W thing so that we can have a little more control on what counts as a word barrier
+        #       (e.g. apostrophes are considered a word barrier right now, which isn't desirable)
+
         json = loads(line)
         for key, value in json.items():
             tokens.append(f'"{key}":')
@@ -124,13 +131,21 @@ def custom_splitter(text):
                 if key == 'name':
                     tokens.extend(list(value))
                 else:
-                    tokens.extend(findall(r'\{.+?}|\w+|\W', tidied_value))
+                    # TODO: wrap the rules templates in _checks_ for \W on either side, but
+                    #       don't _capture_ the \W's
+                    regex = (
+                            r'|'.join(rules_templates)  # rules templates
+                            + r'|\{.+?}'  # mana symbols
+                            + r'|\w+'  # whole words
+                            + r'|\W'  # non-word characters
+                    )
+                    tokens.extend(findall(regex, tidied_value))
                 tokens.append('",')
 
         # End the object
         last_token = tokens[-1]
-        last_token = last_token[:-1]    # Remove the comma
-        last_token += "}\n"           # Close the object
+        last_token = last_token[:-1]  # Remove the comma
+        last_token += "}\n"  # Close the object
         tokens[-1] = last_token
         retval.append(list(tokens))
 
@@ -158,12 +173,13 @@ def train_model(
         max_tokens=1500,
         standardize='lower',
         split=lambda x: py_function(custom_splitter, [x], Tout=tf.string),
-        output_mode = 'int',
+        output_mode='int',
     )
-
     vectorizer.adapt(raw_text)
+
     print(vectorizer.get_vocabulary())
     print(f'Vocab len: {len(vectorizer.get_vocabulary())}')
+
     sequences = vectorizer(raw_text)
 
     # Find the maximum sequence length

@@ -97,7 +97,7 @@ def sample_with_temperature(predictions, temperature=1.0):
     return sampled_index
 
 
-def generate_text(next_n_words, model, vectorizer, temperature=0.1):
+def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_breaks=False):
     # TODO: allow a key/value pair to be a seed (this will be more complex due to splitting/tokenization process)
     context_sequence = vectorizer(['{'])
     max_sequence_length = model.layers[0].input_length
@@ -118,7 +118,10 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1):
         context_sequence = np.append(context_sequence, predicted_index)[-(max_sequence_length):].reshape(1, -1)
 
     vocabulary = vectorizer.get_vocabulary()
-    generated_text = ''.join([
+    join_string = ''
+    if show_token_breaks:
+        join_string = ' | '
+    generated_text = join_string.join([
         vocabulary[index]
         for index in output_sequence
     ])
