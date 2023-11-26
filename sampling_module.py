@@ -97,8 +97,9 @@ def sample_with_temperature(predictions, temperature=1.0):
     return sampled_index
 
 
-def generate_text(seed_text, next_n_words, model, vectorizer, temperature=0.1):
-    context_sequence = vectorizer([seed_text])
+def generate_text(next_n_words, model, vectorizer, temperature=0.1):
+    # TODO: allow a key/value pair to be a seed (this will be more complex due to splitting/tokenization process)
+    context_sequence = vectorizer(['{'])
     max_sequence_length = model.layers[0].input_length
     context_sequence = pad_sequences(context_sequence, maxlen=max_sequence_length, padding='pre')
     output_sequence = list(context_sequence[0])

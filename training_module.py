@@ -1,11 +1,13 @@
+from json import loads
 import numpy as np
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping
 from tensorflow.keras.layers import Embedding, LSTM, Dense, TextVectorization
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import pad_sequences, Sequence
-from tqdm import tqdm
+from tensorflow import py_function
+import tensorflow as tf
 from sampling_module import generate_text
-
+from re import findall, sub
 
 def create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims):
     layers = [
@@ -45,7 +47,7 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
 
     print(f"\n----- Generating text after Epoch: {epoch + 1}")
 
-    print(generate_text("{", 100, model, vectorizer))
+    print(generate_text(100, model, vectorizer))
 
 
 class DataGenerator(Sequence):
@@ -70,8 +72,8 @@ class DataGenerator(Sequence):
             batch_indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
         else:
             batch_indexes = self.indexes[
-                index * self.batch_size:min((index + 1) * self.batch_size, self.split_index)
-            ]
+                            index * self.batch_size:min((index + 1) * self.batch_size, self.split_index)
+                            ]
         batch_data = self.data[batch_indexes]
         sequences = self.vectorizer(batch_data)
         input_sequences = [
@@ -83,6 +85,60 @@ class DataGenerator(Sequence):
         x = input_sequences[:, :-1]
         y = input_sequences[:, -1]
         return x, y
+
+
+def custom_splitter(text):
+    retval = []
+    for raw_line in text.numpy():
+        line = raw_line.decode('utf-8')
+
+        # Start the object
+        tokens = ['{']
+
+        # Handle the case where we're seeding a new object
+        if line == '{':
+            retval.append(tokens)
+            continue
+
+        json = loads(line)
+        for key, value in json.items():
+            tokens.append(f'"{key}":')
+            if isinstance(value, list):
+                if len(value) == 0:
+                    tokens.append('[]')
+                    continue
+
+                tokens.append('["')
+                list_tokens = []
+                for element in value:
+                    list_tokens.extend(findall(r'\w+|\W', str(element)))
+                    list_tokens.append('","')
+                list_tokens[-1] = '"],'
+                tokens.extend(list_tokens)
+            else:
+                # Strip reminder text (TODO: we don't need this once the data prep script does it)
+                tidied_value = sub(r'\(.+?\)', '', str(value))
+
+                tokens.append('"')
+                # Let's let names be arbitrary constructions, instead of copied words
+                if key == 'name':
+                    tokens.extend(list(value))
+                else:
+                    tokens.extend(findall(r'\{.+?}|\w+|\W', tidied_value))
+                tokens.append('",')
+
+        # End the object
+        last_token = tokens[-1]
+        last_token = last_token[:-1]    # Remove the comma
+        last_token += "}\n"           # Close the object
+        tokens[-1] = last_token
+        retval.append(list(tokens))
+
+    # Ensure that all inner lists have the same length
+    max_len = max(len(tokens) for tokens in retval)
+    retval = [tokens + [''] * (max_len - len(tokens)) for tokens in retval]
+
+    return tf.constant(retval, dtype=tf.string)
 
 
 def train_model(
@@ -101,12 +157,13 @@ def train_model(
     vectorizer = TextVectorization(
         max_tokens=1500,
         standardize='lower',
-        split='character',
-        output_mode='int'
+        split=lambda x: py_function(custom_splitter, [x], Tout=tf.string),
+        output_mode = 'int',
     )
 
     vectorizer.adapt(raw_text)
     print(vectorizer.get_vocabulary())
+    print(f'Vocab len: {len(vectorizer.get_vocabulary())}')
     sequences = vectorizer(raw_text)
 
     # Find the maximum sequence length
@@ -137,4 +194,4 @@ def train_model(
 
     # Save the trained model
     model.save(model_path)
-    print(generate_text("{", 100, model, vectorizer))
+    print(generate_text(100, model, vectorizer))

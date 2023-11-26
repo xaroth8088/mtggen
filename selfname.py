@@ -20,6 +20,7 @@ modified_data = replace_name_with_self(input_data)
 # TODO: translate the jq bits into Python code
 # TODO: replace special characters with their ASCII equivalents.  e.g. emdash with hyphen, accented characters, bullets to asterisks, etc.
 # TODO: end each line with a special character like "@", so that we can know for sure where to trim the candidate generations
+# TODO: strip reminder texts
 
 # Print the modified JSON data
 json.dump(modified_data, sys.stdout, ensure_ascii=False, indent=2)
