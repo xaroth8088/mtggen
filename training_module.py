@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import py_function
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping
-from tensorflow.keras.layers import Embedding, LSTM, Dense, TextVectorization
+from tensorflow.keras.layers import Embedding, LSTM, Dense, TextVectorization, Bidirectional
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import pad_sequences, Sequence
 
@@ -24,9 +24,9 @@ def create_model(vocab_size, max_sequence_length, num_units, num_layers, embeddi
     ]
 
     for _ in range(num_layers - 1):
-        layers.append(LSTM(num_units, return_sequences=True))
+        layers.append(Bidirectional(LSTM(num_units, return_sequences=True)))
 
-    layers.append(LSTM(num_units))
+    layers.append(Bidirectional(LSTM(num_units)))
 
     layers.append(
         Dense(vocab_size, activation='softmax')
