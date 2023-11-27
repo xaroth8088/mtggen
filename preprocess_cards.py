@@ -83,7 +83,7 @@ def main():
 
     parser.add_argument('--input_path', action='store', type=str, default='corpus/AllPrintings.json',
                         help='Train the model using the specified data file')
-    parser.add_argument('--output_path', action='store', type=str, default='corpus/preprocessed_cards.json',
+    parser.add_argument('--output_path', action='store', type=str, default='corpus/preprocessed_cards.jsonl',
                         help='Where to save the pre-processed cards')
 
     args = parser.parse_args()
