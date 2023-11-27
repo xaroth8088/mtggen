@@ -8,7 +8,8 @@ def main():
     parser = argparse.ArgumentParser(description='Train or sample from a JSON generator model.')
     parser.add_argument('--train', action='store', metavar='data_path', type=str,
                         help='Train the model using the specified data file')
-    parser.add_argument('--sample', action='store_true', help='Sample from a previously-trained model')
+    parser.add_argument('--sample', action='store', metavar='data_path', type=str,
+                        help='Sample from a previously-trained model')
     parser.add_argument('--model_path', type=str, default='json_generator_model.keras',
                         help='Path to the model file for sampling')
     parser.add_argument('--checkpoint_path', type=str, default='in_progress.keras',
@@ -27,6 +28,8 @@ def main():
                         help='How many times to go through the training data (trade amount of learning for training time)')
     parser.add_argument('--embedding_dims', type=int, default=128,
                         help='Width of the embedding layer (trade understanding of complex relationships between words for memory and training speed)')
+    parser.add_argument('--temperature', type=float, default=0.5,
+                        help='How creative will the generation be (range: 0.0 to 1.0; lower numbers are less creative)')
     args = parser.parse_args()
 
     if args.train:
@@ -44,7 +47,8 @@ def main():
     elif args.sample:
         sample_from_pretrained_model(
             model_path=args.model_path,
-            characters_path="characters.txt"
+            data_path=args.sample,
+            temperature=args.temperature,
         )
     else:
         print("Please specify either --train or --sample.")

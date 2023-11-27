@@ -2,91 +2,33 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-
-def clean_generated_json(raw_string):
-    just_json = raw_string.split("@")[0]
-    return just_json
+from vectorizer import build_vectorizer
 
 
-def sample_from_model(temperature=0.5, max_length=400, chars=None, model=None):
-    temperature = 0.0
-    max_length = 15
-    prefix_text = "Hell"
+def sample_from_pretrained_model(
+        model_path='json_generator_model.keras',
+        data_path='mtg.jsonl',
+        next_n_words=100,
+        temperature=0.5
+):
+    # See note on vectorizer.py::custom_splitter() for more info on why we need this here
+    with open(data_path, 'r', encoding='utf-8') as file:
+        raw_text = np.array(file.readlines())
 
-    char_indices = {char: i for i, char in enumerate(chars)}
-    indices_char = {value: key for key, value in char_indices.items()}
+    vectorizer = build_vectorizer(raw_text)
 
-    # Initialize the input tensor with the seed sequence
-    x_pred = np.zeros((1, len(prefix_text), len(char_indices)), dtype=bool)
-    for t, char in enumerate(prefix_text):
-        x_pred[0, t, char_indices[char]] = 1.0
-
-    generated_text = prefix_text
-    for _ in range(max_length):
-        # Predict the next character probabilities
-        preds = model.predict(x_pred, verbose=0)[0]
-
-        print("Seed Sequence:", prefix_text)
-        print("Predicted Probabilities:", preds)
-        print("Generated Sequence:", generated_text)
-
-        # Sample the next character index based on the temperature
-        next_index = sample(preds, temperature)
-        next_char = indices_char[next_index]
-
-        # Append the next character to the generated text
-        generated_text += next_char
-
-        # Update the input sequence for the next iteration
-        x_pred = np.zeros((1, len(generated_text), len(char_indices)), dtype=bool)
-        for t, char in enumerate(generated_text[-len(prefix_text):]):  # Use the last part of generated_text
-            x_pred[0, t, char_indices[char]] = 1.0
-        # for t, char in enumerate(generated_text):
-        #     x_pred[0, t, char_indices[char]] = 1.0
-
-    return clean_generated_json(generated_text)
-
-
-def sample_from_pretrained_model(model_path, characters_path, max_length=400, temperature=0.5):
     model = load_model(model_path)
 
-    with open(characters_path, 'r') as file:
-        characters = file.read()
-
-    generated_text = sample_from_model(
+    generated_text = generate_text(
+        next_n_words,
+        model,
+        vectorizer,
         temperature=temperature,
-        max_length=max_length,
-        chars=characters,
-        model=model
+        show_token_breaks=False
     )
 
     print(generated_text)
 
-
-def sample(preds, temperature=1.0):
-    temperature = 0.0
-    preds = np.asarray(preds).astype('float64')
-    print("********************************************************")
-    print(preds)
-
-    # Ensure temperature is not exactly 0.0 to avoid division by zero
-    if temperature > 0.0:
-        preds = np.log(np.maximum(preds, 1e-10)) / temperature
-    else:
-        preds = np.log(np.maximum(preds, 1e-10))
-    print(preds)
-
-    exp_preds = np.exp(preds)
-    print(preds)
-    preds = exp_preds / np.sum(exp_preds)
-    print(preds)
-
-    probas = np.random.multinomial(1, preds, 1)
-    print(np.argmax(probas))
-    print("********************************************************")
-    return np.argmax(probas)
-
-#---
 
 def sample_with_temperature(predictions, temperature=1.0):
     predictions = np.asarray(predictions).astype('float64')
@@ -97,12 +39,14 @@ def sample_with_temperature(predictions, temperature=1.0):
     return sampled_index
 
 
+# TODO: we don't need 'next_n_words', and instead should be a safety limit, since we should just generate until we
+#       get to the end of a JSON object.
 def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_breaks=False):
     # TODO: allow a key/value pair to be a seed (this will be more complex due to splitting/tokenization process)
     context_sequence = vectorizer(['{'])
     max_sequence_length = model.layers[0].input_length
     context_sequence = pad_sequences(context_sequence, maxlen=max_sequence_length, padding='pre')
-    output_sequence = list(context_sequence[0]) # TODO: output_sequence doesn't need all the leading 0's :P
+    output_sequence = list(context_sequence[0])  # TODO: output_sequence doesn't need all the leading 0's :P
 
     for _ in range(next_n_words):
         # Call model.predict() to get the prediction weights
