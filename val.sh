@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This script validates that all lines in the file are valid for use with mtggen.
+# Each line has to meet these criteria:
+# 1. it must be a valid JSON object
+# 2. values must be either a) a string, or b) an array of strings
+
 line_number=0
 while IFS= read -r line; do
     ((line_number++))
