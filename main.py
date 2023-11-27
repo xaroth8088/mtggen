@@ -6,30 +6,41 @@ from training_module import train_model
 
 def main():
     parser = argparse.ArgumentParser(description='Train or sample from a JSON generator model.')
-    parser.add_argument('--train', action='store', metavar='data_path', type=str,
+
+    training_args = parser.add_argument_group('Training Options')
+    sampling_args = parser.add_argument_group('Sampling Options')
+    common_args = parser.add_argument_group('Common Options')
+
+    # Training params
+    training_args.add_argument('--train', action='store', metavar='data_path', type=str,
                         help='Train the model using the specified data file')
-    parser.add_argument('--sample', action='store', metavar='data_path', type=str,
-                        help='Sample from a previously-trained model')
-    parser.add_argument('--model_path', type=str, default='json_generator_model.keras',
-                        help='Path to the model file for sampling')
-    parser.add_argument('--checkpoint_path', type=str, default='in_progress.keras',
+    training_args.add_argument('--checkpoint_path', type=str, default='in_progress.keras',
                         help='After each epoch, a checkpoint will be saved here.  If that file already exists, training will resume from that point')
-    parser.add_argument('--sample_every_n_epochs', type=int, default=3,
+    training_args.add_argument('--sample_every_n_epochs', type=int, default=3,
                         help='Every n epochs, generate a short sample. (0 to disable)')
-    parser.add_argument('--model_output_path', type=str, default='json_generator_model.keras',
+    training_args.add_argument('--model_output_path', type=str, default='json_generator_model.keras',
                         help='Where to save the model')
-    parser.add_argument('--batch_size', type=int, default=1,
+    training_args.add_argument('--batch_size', type=int, default=1,
                         help='Batch size for training (trade training speed for stability of training)')
-    parser.add_argument('--num_units', type=int, default=128,
+    training_args.add_argument('--num_units', type=int, default=128,
                         help='Width of the LSTM (trade "smarts" of the network for memory and training speed)')
-    parser.add_argument('--num_layers', type=int, default=1,
+    training_args.add_argument('--num_layers', type=int, default=1,
                         help='Depth of the LSTM (trade "smarts" of the network for memory and training speed)')
-    parser.add_argument('--num_epochs', type=int, default=100,
+    training_args.add_argument('--num_epochs', type=int, default=100,
                         help='How many times to go through the training data (trade amount of learning for training time)')
-    parser.add_argument('--embedding_dims', type=int, default=128,
+    training_args.add_argument('--embedding_dims', type=int, default=128,
                         help='Width of the embedding layer (trade understanding of complex relationships between words for memory and training speed)')
-    parser.add_argument('--temperature', type=float, default=0.5,
+
+    # Sampling params
+    sampling_args.add_argument('--sample', action='store', metavar='data_path', type=str,
+                        help='Sample from a previously-trained model.  The path to the data that was used for training is also required for now.')
+    sampling_args.add_argument('--temperature', type=float, default=0.5,
                         help='How creative will the generation be (range: 0.0 to 1.0; lower numbers are less creative)')
+
+    # Used in both
+    common_args.add_argument('--model_path', type=str, default='json_generator_model.keras',
+                        help='Path to the model file for sampling')
+
     args = parser.parse_args()
 
     if args.train:
