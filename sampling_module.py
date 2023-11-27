@@ -102,7 +102,7 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_b
     context_sequence = vectorizer(['{'])
     max_sequence_length = model.layers[0].input_length
     context_sequence = pad_sequences(context_sequence, maxlen=max_sequence_length, padding='pre')
-    output_sequence = list(context_sequence[0])
+    output_sequence = list(context_sequence[0]) # TODO: output_sequence doesn't need all the leading 0's :P
 
     for _ in range(next_n_words):
         # Call model.predict() to get the prediction weights

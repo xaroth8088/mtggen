@@ -1,6 +1,8 @@
 import argparse
-from training_module import train_model
+
 from sampling_module import sample_from_pretrained_model
+from training_module import train_model
+
 
 def main():
     parser = argparse.ArgumentParser(description='Train or sample from a JSON generator model.')
@@ -9,6 +11,8 @@ def main():
     parser.add_argument('--sample', action='store_true', help='Sample from a previously-trained model')
     parser.add_argument('--model_path', type=str, default='json_generator_model.keras',
                         help='Path to the model file for sampling')
+    parser.add_argument('--checkpoint_path', type=str, default='in_progress.keras',
+                        help='After each epoch, a checkpoint will be saved here.  If that file already exists, training will resume from that point')
     parser.add_argument('--sample_every_n_epochs', type=int, default=3,
                         help='Every n epochs, generate a short sample. (0 to disable)')
     parser.add_argument('--model_output_path', type=str, default='json_generator_model.keras',
@@ -34,7 +38,8 @@ def main():
             num_units=args.num_units,
             num_layers=args.num_layers,
             num_epochs=args.num_epochs,
-            embedding_dims=args.embedding_dims
+            embedding_dims=args.embedding_dims,
+            checkpoint_path=args.checkpoint_path
         )
     elif args.sample:
         sample_from_pretrained_model(
@@ -43,6 +48,7 @@ def main():
         )
     else:
         print("Please specify either --train or --sample.")
+
 
 if __name__ == "__main__":
     main()

@@ -4,11 +4,11 @@ from re import findall, sub
 import numpy as np
 import tensorflow as tf
 from tensorflow import py_function
-from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping
+from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import Embedding, LSTM, Dense, TextVectorization, Bidirectional
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.utils import pad_sequences, Sequence
-
+from os.path import exists
 from rules_templates import rules_templates
 from sampling_module import generate_text
 
@@ -159,6 +159,7 @@ def custom_splitter(text):
 def train_model(
         data_path='mtg.jsonl',
         model_path='json_generator_model.keras',
+        checkpoint_path='in_progress.keras',
         batch_size=1,
         num_units=128,
         num_layers=1,
@@ -189,6 +190,11 @@ def train_model(
     vocab_size = len(vectorizer.get_vocabulary())
 
     model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
+
+    if exists(checkpoint_path):
+        print("Resuming training from saved checkpoint")
+        model.load_weights(checkpoint_path)
+
     model.summary()
 
     data_generator = DataGenerator(raw_text, vectorizer, batch_size, max_length=max_sequence_length)
@@ -204,7 +210,13 @@ def train_model(
             LambdaCallback(
                 on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs)
             ),
-            EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+            EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+            ModelCheckpoint(
+                filepath=checkpoint_path,
+                save_weights_only=True,
+                save_best_only=False,
+                verbose=1
+            )
         ]
     )
 
