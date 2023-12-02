@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HTML 5 Boilerplate</title>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Roboto+Slab">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="card"></div>
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script id="card-template" type="text/x-handlebars-template">
+    <div class="card {{card_background manacost}}">
+        <div class="title-bar">
+            <div class="name">{{name}}</div>
+            <div class="mana">{{{mana_symbols manacost}}}</div>
+        </div>
+        <div class="art">
+            <img src="https://placehold.co/360x250" alt="{{name}}"/>
+        </div>
+        <div class="type-bar">
+            <div class="type">
+                {{#each supertypes}}
+                <span>{{this}}</span>
+                {{/each}}
+                {{#each types}}
+                <span>{{this}}</span>
+                {{/each}}
+                &mdash;
+                {{#each subtypes}}
+                <span>{{this}}</span>
+                {{/each}}
+            </div>
+            <div class="rarity">
+                {{rarity}}
+            </div>
+        </div>
+        <div class="text">{{text}}</div>
+        <div class="stats">{{power}}/{{toughness}}</div>
+    </div>
+</script>
+<script type="module" src="script.js"></script>
+</body>
+</html>

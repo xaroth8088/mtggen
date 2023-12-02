@@ -1,0 +1,123 @@
+body {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    width: 409px;
+    height: 585px;
+    display: grid;
+    font-family: "Roboto Slab", serif;
+    font-size: 18px;
+}
+
+#card {
+    display: flex;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 10px solid black;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.card > div {
+    border: 5px black solid;
+}
+
+.card.background_g {
+    background-color: green;
+}
+
+.card.background_b {
+    background-color: blue;
+}
+
+.card.background_b.background_g {
+    background: linear-gradient(45deg, rgba(14,0,255,1), rgba(0,255,3,1));
+}
+
+.title-bar {
+    display: flex;
+    height: 30px;
+    line-height: 30px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 0 5px;
+    margin-left: -5px;
+    margin-right: -5px;
+    border-radius: 10px;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: -5px;
+    font-size: 20px;
+}
+
+.name {
+    flex-grow: 1;
+}
+
+.mana {
+    display: flex;
+    line-height: 20px;
+    height: 20px;
+}
+
+.mana span {
+    margin: 0 2px;
+    border: 1px solid black;
+    border-radius: 50%;
+    width: 20px;
+    text-align: center;
+    text-transform: capitalize;
+    font-size: 12px;
+    background-color: lightgray;
+}
+
+.symbol_g {
+    background-color: darkgreen !important;
+    color: white;
+}
+
+.art {
+    width: 360px;
+    height: 250px;
+    text-align: center;
+    margin-bottom: -5px;
+}
+
+.type-bar {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.7);
+    height: 30px;
+    line-height: 30px;
+    border-radius: 10px;
+    margin-left: -3px;
+    margin-right: -3px;
+    font-weight: bold;
+    padding: 0 5px;
+    margin-bottom: -5px;
+    font-size: 18px;
+}
+
+.type {
+    flex-grow: 1;
+}
+
+.text {
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px;
+}
+
+.stats {
+    align-self: flex-end;
+    width: 70px;
+    border-radius: 5px;
+    margin-top: -10px;
+    background-color: lightgreen;
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    margin-right: -5px;
+}
