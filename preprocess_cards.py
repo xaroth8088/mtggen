@@ -19,7 +19,7 @@ def filter_unwanted_keys(card):
         "isFullArt", "isOnlineOnly", "isPromo", "isStarter", "isStorySpotlight",
         "isTimeshifted", "leadershipSkills", "originalReleaseDate", "otherFaceIds",
         "promoTypes", "rebalancedPrintings", "securityStamp", "side", "subsets", "watermark",
-        "isFunny", "isAlternative", "isTextless"
+        "isFunny", "isAlternative", "isTextless", "keywords"
     ]:
         card.pop(key, None)
 
@@ -59,6 +59,10 @@ def replace_card_name_with_tilde(text, card_name):
     #       because those either start or end with a word-break character, and so the card name won't cleanly
     #       match.
     return re.sub(r'\b%s\b' % re.escape(card_name), '~', text)
+
+
+def replace_tilde_with_card_name(text, card_name):
+    return re.sub(r'~', card_name, text)
 
 
 def remove_reminder_text(text):
@@ -114,6 +118,10 @@ def main():
 
             if "name" not in card:
                 continue
+
+            # TODO: Don't include dual-face or split cards
+            # TODO: Support dual-face cards
+            # TODO: Support split cards
 
             card = filter_unwanted_keys(card)
             card = filter_empty_values(card)

@@ -2,13 +2,14 @@ import argparse
 
 from sampling_module import sample_from_pretrained_model
 from training_module import train_model
-
+from webserver_module import start_server
 
 def main():
     parser = argparse.ArgumentParser(description='Train or sample from a JSON generator model.')
 
     training_args = parser.add_argument_group('Training Options')
     sampling_args = parser.add_argument_group('Sampling Options')
+    web_args = parser.add_argument_group('Webserver Options')
     common_args = parser.add_argument_group('Common Options')
 
     # Training params
@@ -31,13 +32,17 @@ def main():
     training_args.add_argument('--embedding_dims', type=int, default=128,
                         help='Width of the embedding layer (trade understanding of complex relationships between words for memory and training speed)')
 
-    # Sampling params
+    # Sampling and web params
     sampling_args.add_argument('--sample', action='store', metavar='data_path', type=str,
                         help='Sample from a previously-trained model.  The path to the data that was used for training is also required for now.')
     sampling_args.add_argument('--temperature', type=float, default=0.5,
                         help='How creative will the generation be (range: 0.0 to 1.0; lower numbers are less creative)')
 
-    # Used in both
+    # Web server params
+    web_args.add_argument('--web', action='store', metavar='data_path', type=str,
+                               help='Start a web server on port 8000 with a single route at / that returns JSON suitable for use in the card HTML')
+
+    # Used in all
     common_args.add_argument('--model_path', type=str, default='json_generator_model.keras',
                         help='Path to the model file for sampling')
 
@@ -60,6 +65,12 @@ def main():
             model_path=args.model_path,
             data_path=args.sample,
             temperature=args.temperature,
+        )
+    elif args.web:
+        start_server(
+            model_path=args.model_path,
+            data_path=args.web,
+            temperature=args.temperature
         )
     else:
         print("Please specify either --train or --sample.")

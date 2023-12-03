@@ -1,6 +1,10 @@
+import json
+import re
+
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from preprocess_cards import replace_tilde_with_card_name, json_walker
 
 from vectorizer import build_vectorizer
 
@@ -19,20 +23,23 @@ def sample_from_pretrained_model(
 
     model = load_model(model_path)
 
-    generated_text = generate_text(
-        next_n_words,
-        model,
-        vectorizer,
-        temperature=temperature,
-        show_token_breaks=False
-    )
-
-    print(generated_text)
+    for _ in range(5):
+        generated_text = generate_text(
+            next_n_words,
+            model,
+            vectorizer,
+            temperature=temperature,
+            show_token_breaks=False
+        )
+        print("***********************************************************")
+        print(generated_text)
 
 
 def sample_with_temperature(predictions, temperature=1.0):
     predictions = np.asarray(predictions).astype('float64')
-    predictions = np.log(predictions) / temperature
+    with np.errstate(divide='ignore'):
+        predictions = np.log(predictions)
+    predictions = predictions / temperature
     exp_preds = np.exp(predictions)
     predictions = exp_preds / np.sum(exp_preds)
     sampled_index = np.argmax(np.random.multinomial(1, predictions, 1))
@@ -70,4 +77,49 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_b
         for index in output_sequence
     ])
 
-    return generated_text
+    generated_text = generated_text.replace('\n', '\\n')
+
+    try:
+        card = extract_valid_json(generated_text)
+    except (ValueError, json.JSONDecodeError):
+        print("Unable to generate card.  Generated text was:", generated_text)
+        card = {}
+
+    if show_token_breaks is False:
+        card = pretty_format_card(card)
+
+    return json.dumps(card)
+
+
+def pretty_format_card(card):
+    card = json_walker(card, title_case, True)
+
+    if "text" in card:
+        card["text"] = sentence_case(card["text"])
+        card["text"] = replace_tilde_with_card_name(card["text"], card["name"])
+
+    return card
+
+
+def title_case(text):
+    return text.title()
+
+
+def sentence_case(text):
+    return re.sub(r'\w[\w ]+', lambda x: x[0].capitalize(), text)
+
+
+def extract_valid_json(input_string):
+    # Define a custom JSONObject to find the end of the JSON object
+    class JSONObject(json.JSONDecoder):
+        def decode(self, s, _w=json.decoder.WHITESPACE.match):
+            obj, end = super().raw_decode(s, idx=_w)
+            return obj, end
+
+    # Create an instance of the custom decoder
+    decoder = JSONObject()
+
+    # Decode the input string
+    valid_json, end_index = decoder.raw_decode(input_string)
+
+    return valid_json

@@ -1,3 +1,18 @@
+:root {
+    --red: #E06243;
+    --green: #486F51;
+    --blue: #3464A4;
+    --black: #363631;
+    --white: #E8E7DF;
+    --gold: #AE9669;
+    --gray: #CBC7C5;
+    --text-background: rgba(255, 255, 255, 0.4);
+    --common: #FFFFFF;
+    --uncommon: #7A919A;
+    --rare: #C7AB69;
+    --mythic: #CF6930;
+}
+
 body {
     box-sizing: border-box;
     margin: 0;
@@ -26,23 +41,80 @@ body {
     border: 5px black solid;
 }
 
-.card.background_g {
-    background-color: green;
+.card.background_G {
+    background-color: var(--green);
 }
 
-.card.background_b {
-    background-color: blue;
+.card.background_B {
+    background-color: var(--black);
 }
 
-.card.background_b.background_g {
-    background: linear-gradient(45deg, rgba(14,0,255,1), rgba(0,255,3,1));
+.card.background_U {
+    background-color: var(--blue);
+}
+
+.card.background_R {
+    background-color: var(--red);
+}
+
+.card.background_W {
+    background-color: var(--white);
+}
+
+.card.background_G.background_B {
+    background: linear-gradient(45deg, var(--green), var(--black));
+}
+
+.card.background_G.background_U {
+    background: linear-gradient(45deg, var(--green), var(--blue));
+}
+
+.card.background_G.background_R {
+    background: linear-gradient(45deg, var(--green), var(--red));
+}
+
+.card.background_G.background_W {
+    background: linear-gradient(45deg, var(--green), var(--white));
+}
+
+.card.background_B.background_U {
+    background: linear-gradient(45deg, var(--black), var(--blue));
+}
+
+.card.background_B.background_R {
+    background: linear-gradient(45deg, var(--black), var(--red));
+}
+
+.card.background_B.background_W {
+    background: linear-gradient(45deg, var(--black), var(--white));
+}
+
+.card.background_U.background_R {
+    background: linear-gradient(45deg, var(--blue), var(--red));
+}
+
+.card.background_U.background_W {
+    background: linear-gradient(45deg, var(--blue), var(--white));
+}
+
+.card.background_R.background_W {
+    background: linear-gradient(45deg, var(--red), var(--white));
+}
+
+.card.background_G.background_B.background_U,
+.card.background_G.background_B.background_R,
+.card.background_G.background_B.background_W,
+.card.background_B.background_U.background_R,
+.card.background_B.background_U.background_W,
+.card.background_U.background_R.background_W {
+    background: var(--gold);
 }
 
 .title-bar {
     display: flex;
     height: 30px;
     line-height: 30px;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--text-background);
     padding: 0 5px;
     margin-left: -5px;
     margin-right: -5px;
@@ -63,20 +135,37 @@ body {
     height: 20px;
 }
 
-.mana span {
+.symbol {
+    display: inline-block;
     margin: 0 2px;
     border: 1px solid black;
     border-radius: 50%;
     width: 20px;
+    height: 20px;
     text-align: center;
     text-transform: capitalize;
     font-size: 12px;
-    background-color: lightgray;
+    background-color: var(--gray);
 }
 
-.symbol_g {
-    background-color: darkgreen !important;
-    color: white;
+.symbol_G {
+    background-color: var(--green) !important;
+}
+
+.symbol_W {
+    background-color: var(--white) !important;
+}
+
+.symbol_B {
+    background-color: var(--black) !important;
+}
+
+.symbol_U {
+    background-color: var(--blue) !important;
+}
+
+.symbol_R {
+    background-color: var(--red) !important;
 }
 
 .art {
@@ -88,7 +177,7 @@ body {
 
 .type-bar {
     display: flex;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--text-background);
     height: 30px;
     line-height: 30px;
     border-radius: 10px;
@@ -104,10 +193,37 @@ body {
     flex-grow: 1;
 }
 
+.rarity {
+    font-family: cursive;
+    -webkit-text-stroke-color: black;
+    -webkit-text-stroke-width: 1px;
+    color: var(--gray);
+}
+
+.rarity .rarity_Common {
+    color: var(--common)
+}
+
+.rarity .rarity_Uncommon {
+    color: var(--uncommon)
+}
+
+.rarity .rarity_Rare {
+    color: var(--rare)
+}
+
+.rarity .rarity_Mythic {
+    color: var(--mythic)
+}
+
 .text {
     flex-grow: 1;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--text-background);
     padding: 10px;
+}
+
+.line_break {
+    height: 10px;
 }
 
 .stats {
@@ -115,9 +231,14 @@ body {
     width: 70px;
     border-radius: 5px;
     margin-top: -10px;
-    background-color: lightgreen;
+    background-color: var(--gray);
     text-align: center;
     font-size: 30px;
     font-weight: bold;
     margin-right: -5px;
+    visibility: hidden;
+}
+
+.show_stats {
+    visibility: visible !important;
 }
