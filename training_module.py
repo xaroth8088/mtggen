@@ -53,45 +53,38 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
 
 
 class DataGenerator(Sequence):
-    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2):
-        self.dataset = dataset
-        self.num_lines = num_lines
+    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2, is_training=True):
+        self.dataset = dataset.cache().shuffle(num_lines) if is_training else dataset
         self.vectorizer = vectorizer
         self.batch_size = batch_size
-        self.validation_split = validation_split
         self.max_length = max_sequence_length
-        self.split_index = int((1 - self.validation_split) * self.num_lines)
+        self.validation_split = validation_split
+        self.split_index = int((1 - self.validation_split) * num_lines)
+        self.total_lines = num_lines if is_training else int(num_lines * self.validation_split)
+        self.dataset = self.dataset.batch(batch_size)
 
     def __len__(self):
-        if self.validation_split == 0.0:
-            return int(np.ceil(self.num_lines / self.batch_size))
-        else:
-            return int(np.ceil(self.split_index / self.batch_size))
+        return int(np.ceil(self.total_lines / self.batch_size))
 
     def __getitem__(self, index):
-        if self.validation_split == 0.0:
-            batch_data = self.dataset.skip(index * self.batch_size).take(self.batch_size)
-        else:
-            start = index * self.batch_size
-            end = min((index + 1) * self.batch_size, self.split_index)
-            batch_data = self.dataset.skip(start).take(end - start)
+        batch_data = next(iter(self.dataset.skip(index).take(1)))
 
-        # Extract text data from the dataset
+        # Vectorize the text data on-the-fly
         texts = [text.numpy().decode('utf-8') for text in batch_data]
-
-        # Vectorize the text data
         sequences = self.vectorizer(texts)
 
+        # Generate sequences
         input_sequences = [
             sequence[:i + 1]
             for sequence in sequences
             for i in range(1, len(sequence))
         ]
+
         input_sequences = pad_sequences(input_sequences, maxlen=self.max_length, padding='pre')
         x = input_sequences[:, :-1]
         y = input_sequences[:, -1]
-        return x, y
 
+        return x, y
 
 def get_data_stats(data_path):
     max_sequence_length = 0
@@ -136,9 +129,10 @@ def train_model(
 
     model.summary()
 
-    data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length=max_sequence_length)
-    validation_data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size,
-                                              max_sequence_length=max_sequence_length, validation_split=0.2)
+    data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length,
+                                   is_training=True)
+    validation_data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length,
+                                              validation_split=0.2, is_training=False)
 
     model.fit(
         data_generator,
