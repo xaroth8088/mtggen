@@ -1,7 +1,7 @@
 import http.server
 import socketserver
 
-import numpy as np
+from tensorflow.data import TextLineDataset
 from tensorflow.keras.models import load_model
 
 from sampling_module import generate_text
@@ -50,15 +50,13 @@ def start_server(
     global g_vectorizer
     global g_temperature
 
-    # See note on vectorizer.py::custom_splitter() for more info on why we need this here
-    with open(data_path, 'r', encoding='utf-8') as file:
-        raw_text = np.array(file.readlines())
+    dataset = TextLineDataset(data_path)
 
-    g_vectorizer = build_vectorizer(raw_text)
+    g_vectorizer = build_vectorizer(dataset)
 
     g_model = load_model(model_path)
 
-    g_temperature=temperature
+    g_temperature = temperature
 
     # Specify the custom handler
     handler = MyHandler

@@ -73,7 +73,7 @@ def main():
             temperature=args.temperature
         )
     else:
-        print("Please specify either --train or --sample.")
+        print("Please specify either --train, --sample, or --web")
 
 
 if __name__ == "__main__":

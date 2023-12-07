@@ -2,24 +2,23 @@ import json
 import re
 
 import numpy as np
+from tensorflow.data import TextLineDataset
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from preprocess_cards import replace_tilde_with_card_name, json_walker
 
+from preprocess_cards import replace_tilde_with_card_name, json_walker
 from vectorizer import build_vectorizer
 
 
 def sample_from_pretrained_model(
         model_path='json_generator_model.keras',
-        data_path='mtg.jsonl',
+        data_path='corpus/preprocessed_cards.txt',
         next_n_words=100,
         temperature=0.5
 ):
-    # See note on vectorizer.py::custom_splitter() for more info on why we need this here
-    with open(data_path, 'r', encoding='utf-8') as file:
-        raw_text = np.array(file.readlines())
+    dataset = TextLineDataset(data_path)
 
-    vectorizer = build_vectorizer(raw_text)
+    vectorize_layer = build_vectorizer(dataset)
 
     model = load_model(model_path)
 
@@ -27,7 +26,7 @@ def sample_from_pretrained_model(
         generated_text = generate_text(
             next_n_words,
             model,
-            vectorizer,
+            vectorize_layer,
             temperature=temperature,
             show_token_breaks=False
         )
@@ -51,9 +50,9 @@ def sample_with_temperature(predictions, temperature=1.0):
 def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_breaks=False):
     # TODO: allow a key/value pair to be a seed (this will be more complex due to splitting/tokenization process)
     context_sequence = vectorizer(['{'])
+    output_sequence = list(context_sequence[0].numpy())
     max_sequence_length = model.layers[0].input_length
     context_sequence = pad_sequences(context_sequence, maxlen=max_sequence_length, padding='pre')
-    output_sequence = list(context_sequence[0])  # TODO: output_sequence doesn't need all the leading 0's :P
 
     for _ in range(next_n_words):
         # Call model.predict() to get the prediction weights
@@ -69,9 +68,12 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_b
         context_sequence = np.append(context_sequence, predicted_index)[-(max_sequence_length):].reshape(1, -1)
 
     vocabulary = vectorizer.get_vocabulary()
+
     join_string = ''
+
     if show_token_breaks:
         join_string = ' | '
+
     generated_text = join_string.join([
         vocabulary[index]
         for index in output_sequence
@@ -79,16 +81,17 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_b
 
     generated_text = generated_text.replace('\n', '\\n')
 
-    try:
-        card = extract_valid_json(generated_text)
-    except (ValueError, json.JSONDecodeError):
-        print("Unable to generate card.  Generated text was:", generated_text)
-        card = {}
-
     if show_token_breaks is False:
-        card = pretty_format_card(card)
+        try:
+            card = extract_valid_json(generated_text)
+        except (ValueError, json.JSONDecodeError):
+            print("Unable to generate card.  Generated text was:", generated_text)
+            card = {}
 
-    return json.dumps(card)
+        card = pretty_format_card(card)
+        return json.dumps(card)
+
+    return generated_text
 
 
 def pretty_format_card(card):

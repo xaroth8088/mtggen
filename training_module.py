@@ -1,11 +1,14 @@
 import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.data import TextLineDataset
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional, TextVectorization
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.utils import pad_sequences, Sequence
 from os.path import exists
 from sampling_module import generate_text
 from vectorizer import build_vectorizer
+from tensorflow.keras.utils import Sequence
 
 
 def create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims):
@@ -13,7 +16,7 @@ def create_model(vocab_size, max_sequence_length, num_units, num_layers, embeddi
         Embedding(
             input_dim=vocab_size,
             output_dim=embedding_dims,
-            input_length=max_sequence_length - 1,
+            input_length=max_sequence_length,
             mask_zero=True
         )
     ]
@@ -73,7 +76,13 @@ class DataGenerator(Sequence):
             batch_indexes = self.indexes[
                             index * self.batch_size:min((index + 1) * self.batch_size, self.split_index)
                             ]
-        batch_data = self.data[batch_indexes]
+
+        # Convert batch_indexes to a list since TextLineDataset does not support indexing with NumPy arrays
+        batch_indexes = list(batch_indexes)
+
+        # Create a dataset from the tensor and then use as_numpy_iterator
+        batch_data = list(tf.data.Dataset.from_tensor_slices(tf.gather(self.data, batch_indexes)).as_numpy_iterator())
+
         sequences = self.vectorizer(batch_data)
         input_sequences = [
             sequence[:i + 1]
@@ -87,45 +96,45 @@ class DataGenerator(Sequence):
 
 
 def train_model(
-        data_path='mtg.jsonl',
+        data_path='corpus/preprocessed_cards.txt',
         model_path='json_generator_model.keras',
         checkpoint_path='in_progress.keras',
         batch_size=1,
         num_units=128,
-        num_layers=1,
+        num_layers=2,
         num_epochs=100,
         embedding_dims=128,
         sample_every_n_epochs=3
 ):
-    with open(data_path, 'r', encoding='utf-8') as file:
-        raw_text = np.array(file.readlines())
+    dataset = TextLineDataset(data_path)
 
-    vectorizer = build_vectorizer(raw_text)
+    vectorize_layer = build_vectorizer(dataset)
 
-    sequences = vectorizer(raw_text)
+    sequences = vectorize_layer(list(dataset.as_numpy_iterator()))
 
     # Find the maximum sequence length
     max_sequence_length = max(len(seq) for seq in sequences)
     print(f"Max seq len: {max_sequence_length}")
 
-    vocab_size = len(vectorizer.get_vocabulary())
-
     if exists(checkpoint_path):
         print("Resuming training from saved checkpoint")
         model = load_model(checkpoint_path)
     else:
+        vocab_size = len(vectorize_layer.get_vocabulary())
         model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
 
     model.summary()
 
-    data_generator = DataGenerator(raw_text, vectorizer, batch_size, max_length=max_sequence_length)
-    validation_data_generator = DataGenerator(raw_text, vectorizer, batch_size, max_length=max_sequence_length,
+    data_generator = DataGenerator(list(dataset.as_numpy_iterator()), vectorize_layer, batch_size,
+                                   max_length=max_sequence_length)
+    validation_data_generator = DataGenerator(list(dataset.as_numpy_iterator()), vectorize_layer, batch_size,
+                                              max_length=max_sequence_length,
                                               validation_split=0.2)
 
     model.fit(
         data_generator,
-        epochs=num_epochs,
         validation_data=validation_data_generator,
+        epochs=num_epochs,
         batch_size=batch_size,
         callbacks=[
             ModelCheckpoint(
@@ -133,7 +142,7 @@ def train_model(
                 verbose=1
             ),
             LambdaCallback(
-                on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs)
+                on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorize_layer, sample_every_n_epochs)
             ),
             EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
         ]
@@ -144,4 +153,4 @@ def train_model(
         model_path,
         save_format="keras"
     )
-    print(generate_text(100, model, vectorizer))
+    print(generate_text(100, model, vectorize_layer))

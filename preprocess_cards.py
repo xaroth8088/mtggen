@@ -1,9 +1,11 @@
 import argparse
-import re
-from json import load, dumps
+from json import load
+from re import findall, sub, escape
 
 from tqdm import tqdm
 from unidecode import unidecode
+
+from rules_templates import rules_templates
 
 
 def filter_unwanted_keys(card):
@@ -58,15 +60,15 @@ def replace_card_name_with_tilde(text, card_name):
     # TODO: this doesn't quite work right for cards whose names end with a !, or for the card "+2 mace",
     #       because those either start or end with a word-break character, and so the card name won't cleanly
     #       match.
-    return re.sub(r'\b%s\b' % re.escape(card_name), '~', text)
+    return sub(r'\b%s\b' % escape(card_name), '~', text)
 
 
 def replace_tilde_with_card_name(text, card_name):
-    return re.sub(r'~', card_name, text)
+    return sub(r'~', card_name, text)
 
 
 def remove_reminder_text(text):
-    return re.sub(r'\w\(.+\)', '', text)
+    return sub(r'\w\(.+\)', '', text)
 
 
 def filter_empty_values(card):
@@ -79,7 +81,7 @@ def filter_empty_values(card):
 
 
 def replace_mdashes(text):
-    return re.sub('--', '-', text)
+    return sub('--', '-', text)
 
 
 def main():
@@ -87,7 +89,7 @@ def main():
 
     parser.add_argument('--input_path', action='store', type=str, default='corpus/AllPrintings.json',
                         help='Train the model using the specified data file')
-    parser.add_argument('--output_path', action='store', type=str, default='corpus/preprocessed_cards.jsonl',
+    parser.add_argument('--output_path', action='store', type=str, default='corpus/preprocessed_cards.txt',
                         help='Where to save the pre-processed cards')
 
     args = parser.parse_args()
@@ -122,6 +124,7 @@ def main():
             # TODO: Don't include dual-face or split cards
             # TODO: Support dual-face cards
             # TODO: Support split cards
+            # TODO: Support battles
 
             card = filter_unwanted_keys(card)
             card = filter_empty_values(card)
@@ -130,17 +133,72 @@ def main():
             card = json_walker(card, replace_mdashes)
             if "text" in card:
                 card["text"] = replace_card_name_with_tilde(card["text"], card["name"])
+                card["text"] = sub(r'\(.+?\)', '', card["text"])  # Strip reminder text
+                card["text"] = card["text"].replace('\n', '\\n') # Standardize the newline characters in the rules text
 
             preprocessed_cards.append(card)
 
     # Remove duplicates by name
     preprocessed_cards = {card["name"]: card for card in preprocessed_cards}.values()
 
+    # Pre-tokenize the cards
+    preprocessed_cards = [
+        '^'.join(pre_tokenize_card(card))
+        for card in preprocessed_cards
+    ]
+
     # Save the output file
     with open(args.output_path, 'w', encoding='utf-8') as file:
         for card in preprocessed_cards:
-            file.write(dumps(card))
-            file.write('\n')
+            file.write(card)
+
+
+def pre_tokenize_card(card):
+    # Start the object
+    tokens = ['{']
+
+    # TODO: explode out the \w+|\W thing so that we can have a little more control on what counts as a word barrier
+    #       (e.g. apostrophes are considered a word barrier right now, which isn't desirable)
+
+    for key, value in card.items():
+        tokens.append(f'"{key}":')
+        if isinstance(value, list):
+            if len(value) == 0:
+                tokens.append('[]')
+                continue
+
+            tokens.append('["')
+            list_tokens = []
+            for element in value:
+                list_tokens.extend(findall(r'\w+|\W', str(element)))
+                list_tokens.append('","')
+            list_tokens[-1] = '"],'
+            tokens.extend(list_tokens)
+        else:
+            tokens.append('"')
+            # Let's let names be arbitrary constructions, instead of copied words
+            if key == 'name':
+                tokens.extend(list(value))
+            else:
+                # TODO: wrap the rules templates in _checks_ for \W on either side, but
+                #       don't _capture_ the \W's
+                regex = (
+                        r'|'.join(rules_templates)  # rules templates
+                        + r'|\\n'   # newlines, esp. in text
+                        + r'|\{.+?}'  # mana symbols
+                        + r'|\w+'  # whole words
+                        + r'|\W'  # non-word characters
+                )
+                tokens.extend(findall(regex, value))
+            tokens.append('",')
+
+    # End the object
+    last_token = tokens[-1]
+    last_token = last_token[:-1]  # Remove the comma
+    last_token += "}\n"  # Close the object
+    tokens[-1] = last_token
+
+    return tokens
 
 
 if __name__ == "__main__":
