@@ -95,26 +95,37 @@ class DataGenerator(Sequence):
         return x, y
 
 
+def get_max_sequence_len(data_path):
+    max_sequence_length = 0
+
+    with open(data_path, 'r') as file:
+        for line in file:
+            caret_count = line.count('^')
+            max_sequence_length = max(max_sequence_length, caret_count)
+
+    max_sequence_length += 1   # to account for the last token on each line
+
+    print(f"Max seq len: {max_sequence_length}")
+
+    return max_sequence_length
+
+
 def train_model(
         data_path='corpus/preprocessed_cards.txt',
         model_path='json_generator_model.keras',
         checkpoint_path='in_progress.keras',
-        batch_size=1,
+        batch_size=16,
         num_units=128,
         num_layers=2,
         num_epochs=100,
         embedding_dims=128,
         sample_every_n_epochs=3
 ):
+    max_sequence_length = get_max_sequence_len(data_path)
+
     dataset = TextLineDataset(data_path)
 
     vectorize_layer = build_vectorizer(dataset)
-
-    sequences = vectorize_layer(list(dataset.as_numpy_iterator()))
-
-    # Find the maximum sequence length
-    max_sequence_length = max(len(seq) for seq in sequences)
-    print(f"Max seq len: {max_sequence_length}")
 
     if exists(checkpoint_path):
         print("Resuming training from saved checkpoint")
