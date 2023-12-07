@@ -53,37 +53,35 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
 
 
 class DataGenerator(Sequence):
-    def __init__(self, data, vectorizer, batch_size, max_length, validation_split=0.2):
-        self.data = data
+    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2):
+        self.dataset = dataset
+        self.num_lines = num_lines
         self.vectorizer = vectorizer
         self.batch_size = batch_size
         self.validation_split = validation_split
-        self.max_length = max_length
-        self.indexes = np.arange(len(self.data))
-        np.random.shuffle(self.indexes)
-        self.split_index = int((1 - self.validation_split) * len(self.data))
+        self.max_length = max_sequence_length
+        self.split_index = int((1 - self.validation_split) * self.num_lines)
 
     def __len__(self):
         if self.validation_split == 0.0:
-            return int(np.ceil(len(self.data) / self.batch_size))
+            return int(np.ceil(self.num_lines / self.batch_size))
         else:
             return int(np.ceil(self.split_index / self.batch_size))
 
     def __getitem__(self, index):
         if self.validation_split == 0.0:
-            batch_indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
+            batch_data = self.dataset.skip(index * self.batch_size).take(self.batch_size)
         else:
-            batch_indexes = self.indexes[
-                            index * self.batch_size:min((index + 1) * self.batch_size, self.split_index)
-                            ]
+            start = index * self.batch_size
+            end = min((index + 1) * self.batch_size, self.split_index)
+            batch_data = self.dataset.skip(start).take(end - start)
 
-        # Convert batch_indexes to a list since TextLineDataset does not support indexing with NumPy arrays
-        batch_indexes = list(batch_indexes)
+        # Extract text data from the dataset
+        texts = [text.numpy().decode('utf-8') for text in batch_data]
 
-        # Create a dataset from the tensor and then use as_numpy_iterator
-        batch_data = list(tf.data.Dataset.from_tensor_slices(tf.gather(self.data, batch_indexes)).as_numpy_iterator())
+        # Vectorize the text data
+        sequences = self.vectorizer(texts)
 
-        sequences = self.vectorizer(batch_data)
         input_sequences = [
             sequence[:i + 1]
             for sequence in sequences
@@ -95,19 +93,21 @@ class DataGenerator(Sequence):
         return x, y
 
 
-def get_max_sequence_len(data_path):
+def get_data_stats(data_path):
     max_sequence_length = 0
+    num_lines = 0
 
     with open(data_path, 'r') as file:
         for line in file:
             caret_count = line.count('^')
             max_sequence_length = max(max_sequence_length, caret_count)
+            num_lines += 1
 
     max_sequence_length += 1   # to account for the last token on each line
 
-    print(f"Max seq len: {max_sequence_length}")
+    print(f"Max seq len: {max_sequence_length}, Num lines: {num_lines}")
 
-    return max_sequence_length
+    return max_sequence_length, num_lines
 
 
 def train_model(
@@ -121,7 +121,7 @@ def train_model(
         embedding_dims=128,
         sample_every_n_epochs=3
 ):
-    max_sequence_length = get_max_sequence_len(data_path)
+    max_sequence_length, num_lines = get_data_stats(data_path)
 
     dataset = TextLineDataset(data_path)
 
@@ -136,11 +136,9 @@ def train_model(
 
     model.summary()
 
-    data_generator = DataGenerator(list(dataset.as_numpy_iterator()), vectorize_layer, batch_size,
-                                   max_length=max_sequence_length)
-    validation_data_generator = DataGenerator(list(dataset.as_numpy_iterator()), vectorize_layer, batch_size,
-                                              max_length=max_sequence_length,
-                                              validation_split=0.2)
+    data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length=max_sequence_length)
+    validation_data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size,
+                                              max_sequence_length=max_sequence_length, validation_split=0.2)
 
     model.fit(
         data_generator,
