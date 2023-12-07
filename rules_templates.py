@@ -15,6 +15,7 @@ rules_templates = [
     r'your hand', # 1886
     r'draw \w+ cards?', # 1886
     r'creature you control', # 1340
+    r'as long as', #823
     r'1/1', # 774
     r'enchanted creature', # 782
     r'combat damage', # 736
