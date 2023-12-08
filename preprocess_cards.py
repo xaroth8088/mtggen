@@ -1,4 +1,5 @@
 import argparse
+import re
 from json import load
 from re import findall, sub, escape
 
@@ -189,7 +190,7 @@ def pre_tokenize_card(card):
                         + r'|\w+'  # whole words
                         + r'|\W'  # non-word characters
                 )
-                tokens.extend(findall(regex, value))
+                tokens.extend(findall(regex, value, re.IGNORECASE))
             tokens.append('",')
 
     # End the object

@@ -9,30 +9,51 @@ rules_templates = [
     r'you may', # 3721
     r'until end of turn', # 3390
     r'when ~ enters the battlefield', # 2265
-    r'\+1/\+1 counter', # 2010
+    r'put a .*? counter on', #1051
+    r'\+1/\+1 counters?', # 2010 (except what's covered by the above)
     r'\+1/\+1', # 2948, minus the 2010 from above
     r'your graveyard', # 1886
     r'your hand', # 1886
     r'draw \w+ cards?', # 1886
+    r'this creature', #1752
+    r'deals [0-9x]+ damage', #1389
+    r'creature tokens?', #1364
     r'creature you control', # 1340
+    r'discard .*? cards?', # 860
     r'as long as', #823
+    r'that creature', #796
     r'1/1', # 774
     r'enchanted creature', # 782
     r'combat damage', # 736
+    r'under your control', #716
     r'if you do,', # 672
+    r'sacrifice ~', #669
     r'target player', # 654
     r'can\'t be blocked', # 653
+    r'where x is the number of', #248
+    r'is the number of', #607 - 248
     r'search your library', # 603
-    r'you may pay',  # 556
+    r'each creature', #587
     r'onto the battlefield', # 553
     r'at the beginning of your upkeep,', # 531
     r'any target', # 525
     r'only as a sorcery.', # 506
-    r'discard a card', # 416
+    r"owner's hand", #497
+    r'~ attacks', #485
+    r'first strike', #444
     r'the top card of your library', # 354
+    r'scry [0-9]+', #334
     r'add one mana', # 304
-    r'-1/-1 counter',  # 292
+    r'-1/-1 counters?',  # 292 (except what's covered above
     r'-1/-1',  # 420, minus the 292 from above
     r'your opponents control',  # 243
     r'your opponents',  # 327 minus the 243 from 'your opponents control', above
+    r'bottom of your library', #257
+    r'casts? a spell', #221 (50 for 'casts', 171 for 'cast')
+    r'target spell', #217
+    r'at the beginning of the next end step', #215
+    r'gain life', #197
+    r'activate only as a sorcery', #193
+    r'double strike', #173
+    r'mill .*? cards?', #158
 ]
