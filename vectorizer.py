@@ -1,13 +1,14 @@
 import tensorflow as tf
 from tensorflow.keras.layers import TextVectorization
+from tensorflow.keras.saving import register_keras_serializable
 
 
+@register_keras_serializable('mtggen')
 def custom_splitter(text):
     return tf.strings.split(text, '^')
 
 
 def build_vectorizer(dataset):
-    # TODO: save/load the vectorizer, so that we're not reconstructing it every single time
     vectorize_layer = TextVectorization(
         max_tokens=1500,
         standardize='lower',
@@ -21,3 +22,17 @@ def build_vectorizer(dataset):
     print(f'Vocab len: {len(vectorize_layer.get_vocabulary())}')
 
     return vectorize_layer
+
+
+def save_vectorizer(vectorize_layer, vectorizer_path):
+    text_input = tf.keras.Input(shape=(1,), dtype=tf.string)
+    processed_input = vectorize_layer(text_input)
+    model = tf.keras.Model(text_input, processed_input)
+
+    # Save the model
+    model.save(vectorizer_path)
+
+
+def load_vectorizer(vectorizer_path='vectorizer.keras'):
+    loaded_model = tf.keras.models.load_model(vectorizer_path)
+    return loaded_model.layers[1]

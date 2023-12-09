@@ -2,29 +2,26 @@ import json
 import re
 
 import numpy as np
-from tensorflow.data import TextLineDataset
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from preprocess_cards import replace_tilde_with_card_name, json_walker
-from vectorizer import build_vectorizer
+from vectorizer import load_vectorizer
 
 
 def sample_from_pretrained_model(
-        model_path='json_generator_model.keras',
-        data_path='corpus/preprocessed_cards.txt',
-        next_n_words=100,
-        temperature=0.5
+        max_output_tokens=None,
+        model_path=None,
+        vectorizer_path=None,
+        temperature=None
 ):
-    dataset = TextLineDataset(data_path)
-
-    vectorize_layer = build_vectorizer(dataset)
+    vectorize_layer = load_vectorizer(vectorizer_path)
 
     model = load_model(model_path)
 
     for _ in range(5):
         generated_text = generate_text(
-            next_n_words,
+            max_output_tokens,
             model,
             vectorize_layer,
             temperature=temperature,
@@ -45,16 +42,15 @@ def sample_with_temperature(predictions, temperature=1.0):
     return sampled_index
 
 
-# TODO: we don't need 'next_n_words', and instead should be a safety limit, since we should just generate until we
-#       get to the end of a JSON object.
-def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_breaks=False):
+def generate_text(max_output_tokens, model, vectorizer, temperature, show_token_breaks=False):
     # TODO: allow a key/value pair to be a seed (this will be more complex due to splitting/tokenization process)
     context_sequence = vectorizer(['{'])
+    end_token = vectorizer(['"]}'])[0].numpy()[0]
     output_sequence = list(context_sequence[0].numpy())
     max_sequence_length = model.layers[0].input_length
     context_sequence = pad_sequences(context_sequence, maxlen=max_sequence_length, padding='pre')
 
-    for _ in range(next_n_words):
+    while len(output_sequence) < max_output_tokens and output_sequence[-1:][0] != end_token:
         # Call model.predict() to get the prediction weights
         predictions = model.predict(context_sequence, verbose=0)[0]
 
@@ -67,6 +63,12 @@ def generate_text(next_n_words, model, vectorizer, temperature=0.1, show_token_b
         # Advance the context by one
         context_sequence = np.append(context_sequence, predicted_index)[-(max_sequence_length):].reshape(1, -1)
 
+    print("max_output_tokens:", max_output_tokens, "len:", len(output_sequence), "end of output_sequence:", output_sequence[-1:][0], "vs:", end_token)
+
+    return unvectorize(output_sequence, vectorizer, show_token_breaks)
+
+
+def unvectorize(output_sequence, vectorizer, show_token_breaks):
     vocabulary = vectorizer.get_vocabulary()
 
     join_string = ''

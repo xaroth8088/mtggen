@@ -1,11 +1,10 @@
 import http.server
 import socketserver
 
-from tensorflow.data import TextLineDataset
 from tensorflow.keras.models import load_model
 
 from sampling_module import generate_text
-from vectorizer import build_vectorizer
+from vectorizer import load_vectorizer
 
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
@@ -13,6 +12,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         global g_model
         global g_vectorizer
         global g_temperature
+        global g_max_output_tokens
 
         if self.path == '/card-data.js':
             self.send_response(200)
@@ -20,7 +20,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
             generated_text = generate_text(
-                200,
+                g_max_output_tokens,
                 g_model,
                 g_vectorizer,
                 temperature=g_temperature,
@@ -42,26 +42,27 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
 
 def start_server(
         model_path=None,
-        data_path=None,
         temperature=None,
-        port=8000
+        vectorizer_path=None,
+        max_output_tokens=None,
+        listen_address=None,
+        port=None
 ):
     global g_model
     global g_vectorizer
     global g_temperature
+    global g_max_output_tokens
 
-    dataset = TextLineDataset(data_path)
-
-    g_vectorizer = build_vectorizer(dataset)
-
+    g_vectorizer = load_vectorizer(vectorizer_path)
     g_model = load_model(model_path)
 
     g_temperature = temperature
+    g_max_output_tokens = max_output_tokens
 
     # Specify the custom handler
     handler = MyHandler
 
     # Create the server
-    with socketserver.TCPServer(("", port), handler) as httpd:
-        print(f"Serving on port {port}")
+    with socketserver.TCPServer((listen_address, port), handler) as httpd:
+        print(f"Serving on {listen_address}:{port}")
         httpd.serve_forever()

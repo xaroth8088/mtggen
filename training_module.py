@@ -1,36 +1,37 @@
+from os.path import exists
+
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.data import TextLineDataset
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional, TextVectorization
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
 from tensorflow.keras.models import Sequential, load_model
-from os.path import exists
-from sampling_module import generate_text
-from vectorizer import build_vectorizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.utils import Sequence
+
+from sampling_module import generate_text
+from vectorizer import load_vectorizer, build_vectorizer, save_vectorizer
 
 
 def create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims):
-    layers = [
-        Embedding(
-            input_dim=vocab_size,
-            output_dim=embedding_dims,
-            input_length=max_sequence_length,
-            mask_zero=True
-        )
-    ]
+    model = Sequential()
 
+    # Add the Embedding layer
+    model.add(Embedding(
+        input_dim=vocab_size,
+        output_dim=embedding_dims,
+        input_length=max_sequence_length,
+        mask_zero=True
+    ))
+
+    # Add LSTM layers
     for _ in range(num_layers - 1):
-        layers.append(Bidirectional(LSTM(num_units, return_sequences=True)))
+        model.add(Bidirectional(LSTM(num_units, return_sequences=True)))
+    model.add(Bidirectional(LSTM(num_units)))
 
-    layers.append(Bidirectional(LSTM(num_units)))
+    # Add the Dense layer for output
+    model.add(Dense(vocab_size, activation='softmax'))
 
-    layers.append(
-        Dense(vocab_size, activation='softmax')
-    )
-
-    model = Sequential(layers)
+    # Compile the model
     model.compile(
         loss='sparse_categorical_crossentropy',
         optimizer='adam',
@@ -53,7 +54,8 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
 
 
 class DataGenerator(Sequence):
-    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2, is_training=True):
+    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2,
+                 is_training=True):
         self.dataset = dataset.cache().shuffle(num_lines) if is_training else dataset
         self.vectorizer = vectorizer
         self.batch_size = batch_size
@@ -86,6 +88,7 @@ class DataGenerator(Sequence):
 
         return x, y
 
+
 def get_data_stats(data_path):
     max_sequence_length = 0
     num_lines = 0
@@ -96,7 +99,7 @@ def get_data_stats(data_path):
             max_sequence_length = max(max_sequence_length, caret_count)
             num_lines += 1
 
-    max_sequence_length += 1   # to account for the last token on each line
+    max_sequence_length += 1  # to account for the last token on each line
 
     print(f"Max seq len: {max_sequence_length}, Num lines: {num_lines}")
 
@@ -104,30 +107,34 @@ def get_data_stats(data_path):
 
 
 def train_model(
-        data_path='corpus/preprocessed_cards.txt',
-        model_path='json_generator_model.keras',
-        checkpoint_path='in_progress.keras',
-        batch_size=16,
-        num_units=128,
-        num_layers=2,
-        num_epochs=100,
-        embedding_dims=128,
-        sample_every_n_epochs=3
+        data_path=None,
+        model_output_path=None,
+        vectorizer_path=None,
+        checkpoint_path=None,
+        batch_size=None,
+        num_units=None,
+        num_layers=None,
+        num_epochs=None,
+        embedding_dims=None,
+        sample_every_n_epochs=None
 ):
     max_sequence_length, num_lines = get_data_stats(data_path)
 
     dataset = TextLineDataset(data_path)
 
-    vectorize_layer = build_vectorizer(dataset)
-
     if exists(checkpoint_path):
         print("Resuming training from saved checkpoint")
         model = load_model(checkpoint_path)
+        vectorize_layer = load_vectorizer(vectorizer_path)
     else:
+        vectorize_layer = build_vectorizer(dataset)
+        save_vectorizer(vectorize_layer, vectorizer_path)
+
+        print(vectorize_layer.get_vocabulary())
+        print(f'Vocab len: {len(vectorize_layer.get_vocabulary())}')
+
         vocab_size = len(vectorize_layer.get_vocabulary())
         model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
-
-    model.summary()
 
     data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length,
                                    is_training=True)
@@ -153,7 +160,7 @@ def train_model(
 
     # Save the trained model
     model.save(
-        model_path,
+        model_output_path,
         save_format="keras"
     )
-    print(generate_text(100, model, vectorize_layer))
+    print(generate_text(200, model, vectorize_layer, 0.1))
