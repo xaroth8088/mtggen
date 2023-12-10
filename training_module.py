@@ -1,12 +1,10 @@
 from os.path import exists
 
-import numpy as np
+import tensorflow as tf
 from tensorflow.data import TextLineDataset
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
 from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.utils import Sequence
 
 from sampling_module import generate_text
 from vectorizer import load_vectorizer, build_vectorizer, save_vectorizer
@@ -53,42 +51,6 @@ def on_epoch_end(epoch, model, vectorizer, sample_every_n_epochs):
     print(generate_text(100, model, vectorizer, 0.1, True))
 
 
-class DataGenerator(Sequence):
-    def __init__(self, dataset, num_lines, vectorizer, batch_size, max_sequence_length, validation_split=0.2,
-                 is_training=True):
-        self.dataset = dataset.cache().shuffle(num_lines) if is_training else dataset
-        self.vectorizer = vectorizer
-        self.batch_size = batch_size
-        self.max_length = max_sequence_length
-        self.validation_split = validation_split
-        self.split_index = int((1 - self.validation_split) * num_lines)
-        self.total_lines = num_lines if is_training else int(num_lines * self.validation_split)
-        self.dataset = self.dataset.batch(batch_size)
-
-    def __len__(self):
-        return int(np.ceil(self.total_lines / self.batch_size))
-
-    def __getitem__(self, index):
-        batch_data = next(iter(self.dataset.skip(index).take(1)))
-
-        # Vectorize the text data on-the-fly
-        texts = [text.numpy().decode('utf-8') for text in batch_data]
-        sequences = self.vectorizer(texts)
-
-        # Generate sequences
-        input_sequences = [
-            sequence[:i + 1]
-            for sequence in sequences
-            for i in range(1, len(sequence))
-        ]
-
-        input_sequences = pad_sequences(input_sequences, maxlen=self.max_length, padding='pre')
-        x = input_sequences[:, :-1]
-        y = input_sequences[:, -1]
-
-        return x, y
-
-
 def get_data_stats(data_path):
     max_sequence_length = 0
     num_lines = 0
@@ -104,6 +66,50 @@ def get_data_stats(data_path):
     print(f"Max seq len: {max_sequence_length}, Num lines: {num_lines}")
 
     return max_sequence_length, num_lines
+
+
+def generate_sequences(sequence, max_sequence_length):
+    sequence_length = tf.shape(sequence)[0]
+
+    input_sequences = tf.TensorArray(dtype=tf.int16, size=0, dynamic_size=True)
+    target_sequences = tf.TensorArray(dtype=tf.int16, size=0, dynamic_size=True)
+
+    for i in tf.range(sequence_length - 1):
+        input_seq = sequence[:i + 1]
+        target_seq = sequence[i + 1]
+
+        padding_size = max_sequence_length - tf.shape(input_seq)[0]
+        input_seq_padded = tf.pad(input_seq, [[0, padding_size]], "CONSTANT")
+
+        input_sequences = input_sequences.write(i, input_seq_padded)
+        target_sequences = target_sequences.write(i, target_seq)
+
+    return input_sequences.stack(), target_sequences.stack()
+
+
+def preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size, num_lines):
+    # Vectorize the dataset
+    dataset = dataset.map(vectorize_layer)
+
+    # We definitely don't need 64-bit precision on this part, so go down to 16
+    dataset = dataset.map(lambda x: tf.cast(x, tf.int16))
+
+    # Generate sub-sequences
+    dataset = dataset.flat_map(
+        lambda sequence: tf.data.Dataset.from_tensor_slices(
+            generate_sequences(sequence, max_sequence_length)
+        )
+    )
+
+    # Setup for batching
+    dataset = dataset.shuffle(1000).batch(batch_size)
+
+    # Split it into training and validation sets
+    train_size = int(0.8 * num_lines)
+    training_dataset = dataset.take(train_size)
+    validation_dataset = dataset.skip(train_size)
+
+    return training_dataset, validation_dataset
 
 
 def train_model(
@@ -136,14 +142,13 @@ def train_model(
         vocab_size = len(vectorize_layer.get_vocabulary())
         model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
 
-    data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length,
-                                   is_training=True)
-    validation_data_generator = DataGenerator(dataset, num_lines, vectorize_layer, batch_size, max_sequence_length,
-                                              validation_split=0.2, is_training=False)
+    # Pre-process the dataset
+    training_dataset, validation_dataset = preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size,
+                                                              num_lines)
 
     model.fit(
-        data_generator,
-        validation_data=validation_data_generator,
+        training_dataset,
+        validation_data=validation_dataset,
         epochs=num_epochs,
         batch_size=batch_size,
         callbacks=[
@@ -154,7 +159,7 @@ def train_model(
             LambdaCallback(
                 on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorize_layer, sample_every_n_epochs)
             ),
-            EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+            EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
         ]
     )
 
