@@ -87,7 +87,7 @@ def generate_sequences(sequence, max_sequence_length):
     return input_sequences.stack(), target_sequences.stack()
 
 
-def preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size, num_lines):
+def preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size):
     # Vectorize the dataset
     dataset = dataset.map(vectorize_layer)
 
@@ -101,11 +101,19 @@ def preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size
         )
     )
 
+    num_lines = 0
+    for _ in dataset:
+        num_lines += 1
+
     # Setup for batching
-    dataset = dataset.shuffle(1000).batch(batch_size)
+    dataset = dataset.shuffle(num_lines).batch(batch_size)
+
+    num_batches = 0
+    for _ in dataset:
+        num_batches += 1
 
     # Split it into training and validation sets
-    train_size = int(0.8 * num_lines)
+    train_size = int(0.8 * num_batches)
     training_dataset = dataset.take(train_size)
     validation_dataset = dataset.skip(train_size)
 
@@ -143,8 +151,7 @@ def train_model(
         model = create_model(vocab_size, max_sequence_length, num_units, num_layers, embedding_dims)
 
     # Pre-process the dataset
-    training_dataset, validation_dataset = preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size,
-                                                              num_lines)
+    training_dataset, validation_dataset = preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size)
 
     model.fit(
         training_dataset,
