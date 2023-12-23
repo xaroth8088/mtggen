@@ -443,6 +443,7 @@ span.emoji {
     display: inline-block;
     min-width: 38px;
     line-height: normal;
+    visibility: hidden;
 }
 
 .show_stats {
