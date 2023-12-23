@@ -34,17 +34,17 @@ def main():
     # Training params
     parser_train = subparsers.add_parser("train", help="Training mode")
 
-    parser_train.add_argument("--data_path", type=str, default='corpus/preprocessed_cards.txt',
+    parser_train.add_argument("data_path", type=str, default='corpus/preprocessed_cards.txt',
                               help="Path to the data file for training")
     parser_train.add_argument('--model_output_path', type=str, default='mtggen.keras',
                               help='Where to save the fully-trained model')
     parser_train.add_argument('--checkpoint_path', type=str, default='in_progress.keras',
                               help='After each epoch, a checkpoint will be saved here.  If that file already exists, training will resume from that point')
-    parser_train.add_argument('--num_epochs', type=int, default=100,
+    parser_train.add_argument('--num_epochs', type=int, default=200,
                               help='How many times to go through the training data (trade amount of learning for training time)')
     parser_train.add_argument('--sample_every_n_epochs', type=int, default=0,
                               help='Every n epochs, generate a short sample. (0 to disable)')
-    parser_train.add_argument('--batch_size', type=int, default=16,
+    parser_train.add_argument('--batch_size', type=int, default=128,
                               help='Batch size for training (trade training speed for stability of training)')
     parser_train.add_argument('--num_units', type=int, default=150,
                               help='Width of the LSTM (trade "smarts" of the network for memory and training speed)')

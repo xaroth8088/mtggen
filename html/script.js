@@ -1,4 +1,5 @@
 import data from 'http://localhost:8000/card-data.js';
+//import data from './sample.js';
 
 Handlebars.registerHelper('mana_symbols', (cost) => {
     return replaceSymbols(cost);
@@ -33,9 +34,24 @@ Handlebars.registerHelper('card_text', (text) => {
     return text;
 })
 
+Handlebars.registerHelper('card_image', (name) => {
+    return "placeholder.png"
+})
+
 function replaceSymbols(text) {
-    text = text.replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
-    return text;
+    return text
+        .replace(/\{W\}/g, '<span class="symbol symbol_W"><span class="emoji">☀</span></span>')
+        .replace(/\{U\}/g, '<span class="symbol symbol_U"><span class="emoji">💧</span></span>')
+        .replace(/\{B\}/g, '<span class="symbol symbol_B"><span class="emoji">💀</span></span>')
+        .replace(/\{R\}/g, '<span class="symbol symbol_R"><span class="emoji">🔥</span></span>')
+        .replace(/\{G\}/g, '<span class="symbol symbol_G"><span class="emoji">🌳</span></span>')
+        .replace(/\{S\}/g, '<span class="symbol symbol_S"><span class="emoji">❄️</span></span>')
+        .replace(/\{T\}/g, '<span class="symbol symbol_tap">↷</span>')
+        .replace(/\{\d+\}/g, match => `<span class="symbol">${match.slice(1, -1)}</span>`)
+        .replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
+
+    // text = text.replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
+    // return text;
 }
 
 const source = document.getElementById("card-template").innerHTML;

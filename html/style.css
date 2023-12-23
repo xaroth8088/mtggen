@@ -1,16 +1,19 @@
+@import "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&display=swap";
+
 :root {
     --red: #E06243;
-    --green: #486F51;
+    --green: hsl(137deg 19% 62%);
     --blue: #3464A4;
     --black: #363631;
     --white: #E8E7DF;
     --gold: #AE9669;
     --gray: #CBC7C5;
-    --text-background: rgba(255, 255, 255, 0.4);
+    --text-background: rgba(255, 255, 255, 0.95);
     --common: #FFFFFF;
     --uncommon: #7A919A;
     --rare: #C7AB69;
     --mythic: #CF6930;
+    --text-bar-background: rgba(255, 255, 255, 0.8);
 }
 
 body {
@@ -29,164 +32,357 @@ body {
 }
 
 .card {
+    font-family: 'EB Garamond', serif;
+    font-size: 16px;
+    width: 238px;
+    height: 333px;
+    border: 11px solid #000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 12px #0003;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    border: 10px solid black;
-    padding: 10px;
-    border-radius: 20px;
+    position: relative;
+    padding: 0;
+    background-color: var(--gray);
+    background-size: cover;
+    background-position: center;
+    background-origin: border-box;
 }
 
 .card > div {
-    border: 5px black solid;
+    z-index: 2;
 }
 
 .card.background_G {
+    background-image: url("backgrounds/green_background.png");
     background-color: var(--green);
 }
 
 .card.background_B {
+    background-image: url("backgrounds/black_background.png");
     background-color: var(--black);
 }
 
 .card.background_U {
+    background-image: url("backgrounds/blue_background.png");
     background-color: var(--blue);
 }
 
 .card.background_R {
+    background-image: url("backgrounds/red_background.png");
     background-color: var(--red);
 }
 
 .card.background_W {
+    background-image: url("backgrounds/white_background.png");
     background-color: var(--white);
 }
 
 .card.background_G.background_B {
-    background: linear-gradient(45deg, var(--green), var(--black));
+    background-image: url("backgrounds/green_background.png");
+}
+
+.card.background_G.background_B::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/black_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_G.background_U {
-    background: linear-gradient(45deg, var(--green), var(--blue));
+    background-image: url("backgrounds/green_background.png");
+}
+
+.card.background_G.background_U::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/blue_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_G.background_R {
-    background: linear-gradient(45deg, var(--green), var(--red));
+    background-image: url("backgrounds/green_background.png");
+}
+
+.card.background_G.background_R::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/red_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_G.background_W {
-    background: linear-gradient(45deg, var(--green), var(--white));
+    background-image: url("backgrounds/green_background.png");
+}
+
+.card.background_G.background_W::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/white_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_B.background_U {
-    background: linear-gradient(45deg, var(--black), var(--blue));
+    background-image: url("backgrounds/black_background.png");
+}
+
+.card.background_B.background_U::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/blue_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_B.background_R {
-    background: linear-gradient(45deg, var(--black), var(--red));
+    background-image: url("backgrounds/black_background.png");
+}
+
+.card.background_B.background_R::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/red_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_B.background_W {
-    background: linear-gradient(45deg, var(--black), var(--white));
+    background-image: url("backgrounds/black_background.png");
+}
+
+.card.background_B.background_W::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/white_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_U.background_R {
-    background: linear-gradient(45deg, var(--blue), var(--red));
+    background-image: url("backgrounds/blue_background.png");
+}
+
+.card.background_U.background_R::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/red_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_U.background_W {
-    background: linear-gradient(45deg, var(--blue), var(--white));
+    background-image: url("backgrounds/blue_background.png");
+}
+
+.card.background_U.background_W::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/white_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .card.background_R.background_W {
-    background: linear-gradient(45deg, var(--red), var(--white));
+    background-image: url("backgrounds/red_background.png");
 }
 
-.card.background_G.background_B.background_U,
-.card.background_G.background_B.background_R,
-.card.background_G.background_B.background_W,
-.card.background_B.background_U.background_R,
-.card.background_B.background_U.background_W,
-.card.background_U.background_R.background_W {
-    background: var(--gold);
+.card.background_R.background_W::before {
+    content: '';
+    mask: linear-gradient(45deg, #000000 33%, transparent);
+    background-image: url("backgrounds/white_background.png");
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.card.background_B.background_U.background_G,
+.card.background_R.background_B.background_G,
+.card.background_R.background_B.background_U,
+.card.background_R.background_U.background_G,
+.card.background_R.background_W.background_B,
+.card.background_R.background_W.background_G,
+.card.background_R.background_W.background_U,
+.card.background_W.background_B.background_G,
+.card.background_W.background_B.background_U,
+.card.background_W.background_U.background_G {
+    background-image: url("backgrounds/gold_background.png") !important;
+}
+
+.card.background_B.background_U.background_G::before,
+.card.background_R.background_B.background_G::before,
+.card.background_R.background_B.background_U::before,
+.card.background_R.background_U.background_G::before,
+.card.background_R.background_W.background_B::before,
+.card.background_R.background_W.background_G::before,
+.card.background_R.background_W.background_U::before,
+.card.background_W.background_B.background_G::before,
+.card.background_W.background_B.background_U::before,
+.card.background_W.background_U.background_G::before {
+    display: none !important;
 }
 
 .title-bar {
     display: flex;
-    height: 30px;
-    line-height: 30px;
-    background-color: var(--text-background);
-    padding: 0 5px;
-    margin-left: -5px;
-    margin-right: -5px;
-    border-radius: 10px;
+    justify-content: space-between;
     align-items: center;
-    font-weight: bold;
-    margin-bottom: -5px;
-    font-size: 20px;
+    border: 4px ridge #fff;
+    border-radius: 7px;
+    box-sizing: border-box;
+    margin: 7px 8px 0 7px;
+    font-size: .8em;
+    padding: 0 2px 0 3px;
+    line-height: 1.1em;
+    background-color: var(--text-bar-background);
 }
 
 .name {
-    flex-grow: 1;
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
 }
 
 .mana {
     display: flex;
-    line-height: 20px;
-    height: 20px;
+    align-items: center;
 }
 
 .symbol {
     display: inline-block;
-    margin: 0 2px;
-    border: 1px solid black;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 1em;
+    height: 1em;
     text-align: center;
-    text-transform: capitalize;
-    font-size: 12px;
+    line-height: 1em;
     background-color: var(--gray);
+    margin-left: 2px;
+    font-size: 1em;
+    color: #333;
+    box-shadow: 0.8px 0.8px 1px rgba(0, 0, 0, 0.5);
+    text-transform: capitalize;
+}
+
+span.emoji {
+    position: relative;
+    font-size: 0.8em;
 }
 
 .symbol_G {
     background-color: var(--green) !important;
 }
 
+.symbol_G .emoji {
+    top: -0.7px;
+    left: -0.7px;
+}
+
 .symbol_W {
     background-color: var(--white) !important;
+}
+
+.symbol_W .emoji {
+    top: -0.6px;
+    left: 0.2px;
 }
 
 .symbol_B {
     background-color: var(--black) !important;
 }
 
+.symbol_B .emoji {
+    top: -0.9px;
+    left: -0.6px;
+}
+
 .symbol_U {
     background-color: var(--blue) !important;
+}
+
+.symbol_U .emoji {
+    top: -0.7px;
+    left: -0.4px;
 }
 
 .symbol_R {
     background-color: var(--red) !important;
 }
 
-.art {
-    width: 360px;
-    height: 250px;
-    text-align: center;
-    margin-bottom: -5px;
+.symbol_R .emoji {
+    top: -0.5px;
+    left: -0.5px;
+}
+
+.symbol_S {
+    background-color: var(--gray) !important;
+}
+
+.symbol_S .emoji {
+    top: -0.3px;
+    left: -1.2px;
+}
+
+.symbol_tap {
+    transform: rotate(-22deg);
+    font-weight: bold;
+}
+
+.art img {
+    width: 214px;
+    height: auto;
+    object-fit: cover;
+    margin: 0 auto;
+    padding: 0;
+    display: block;
+    box-sizing: border-box;
+    border: 1px solid #000;
+    box-shadow: 0 1px 3px #0000004d;
 }
 
 .type-bar {
     display: flex;
-    background-color: var(--text-background);
-    height: 30px;
-    line-height: 30px;
-    border-radius: 10px;
-    margin-left: -3px;
-    margin-right: -3px;
-    font-weight: bold;
-    padding: 0 5px;
-    margin-bottom: -5px;
-    font-size: 18px;
+    font-size: .759em;
+    font-weight: bolder;
+    padding: 0 8px;
+    margin: 0 8px 0 7px;
+    border: 4px ridge #fff;
+    border-radius: 7px;
+    box-sizing: border-box;
+    line-height: 1.1em;
+    background-color: var(--text-bar-background);
 }
 
 .type {
@@ -217,26 +413,36 @@ body {
 }
 
 .text {
+    font-size: .8em;
+    padding: 8px;
+    margin: 0 11px 19px 9px;
+    border: 4px ridge #fff;
+    border-radius: 2px;
+    box-sizing: border-box;
     flex-grow: 1;
+    line-height: 1em;
     background-color: var(--text-background);
-    padding: 10px;
 }
 
 .line_break {
-    height: 10px;
+    height: .25em;
 }
 
 .stats {
-    align-self: flex-end;
-    width: 70px;
-    border-radius: 5px;
-    margin-top: -10px;
+    font-size: .9em;
+    padding: 0 3px;
+    position: absolute;
+    bottom: 4px;
+    right: 9px;
     background-color: var(--gray);
+    border-radius: 9px;
+    box-shadow: .4px 3px 3px #000c;
     text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    margin-right: -5px;
-    visibility: hidden;
+    border: 4px ridge #fff;
+    font-weight: 700;
+    display: inline-block;
+    min-width: 38px;
+    line-height: normal;
 }
 
 .show_stats {
