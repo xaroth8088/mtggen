@@ -3,7 +3,7 @@
 :root {
     --red: #E06243;
     --green: hsl(137deg 19% 62%);
-    --blue: #3464A4;
+    --blue: #7b9dca;
     --black: #363631;
     --white: #E8E7DF;
     --gold: #AE9669;
@@ -335,6 +335,7 @@ span.emoji {
 .symbol_U .emoji {
     top: -0.7px;
     left: -0.4px;
+    filter: grayscale(1) brightness(0);
 }
 
 .symbol_R {
@@ -361,15 +362,15 @@ span.emoji {
 }
 
 .art img {
-    width: 214px;
-    height: auto;
+    width: 211px;
+    height: 142px;
     object-fit: cover;
     margin: 0 auto;
     padding: 0;
     display: block;
     box-sizing: border-box;
     border: 1px solid #000;
-    box-shadow: 0 1px 3px #0000004d;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .type-bar {

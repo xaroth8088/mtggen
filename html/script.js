@@ -15,7 +15,7 @@ Handlebars.registerHelper('rarity_symbol', (rarity) => {
 })
 
 Handlebars.registerHelper('show_stats', (types) => {
-    if(types.indexOf('Creature') > -1) {
+    if (types.indexOf('Creature') > -1) {
         return "show_stats";
     }
 
@@ -34,8 +34,13 @@ Handlebars.registerHelper('card_text', (text) => {
     return text;
 })
 
-Handlebars.registerHelper('card_image', (name) => {
-    return "placeholder.png"
+Handlebars.registerHelper('card_image', (name, types) => {
+    const url = new URL('../../card-image.png', document.baseURI);
+    const params = new URLSearchParams();
+    params.append("name", name);
+    types.forEach(type => params.append("type[]", type));
+    url.search = params;
+    return url.toString()
 })
 
 function replaceSymbols(text) {
