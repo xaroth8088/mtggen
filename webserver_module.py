@@ -86,7 +86,6 @@ def start_server(
     global g_max_output_tokens
     global g_pipe
 
-    print('1')
     g_vectorizer = load_vectorizer(vectorizer_path)
     g_model = load_model(model_path)
 
@@ -94,16 +93,12 @@ def start_server(
     g_max_output_tokens = max_output_tokens
 
     # Diffusers
-    print('2')
     g_pipe = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/sdxl-turbo",
-#        torch_dtype=torch.float16,
+        torch_dtype=torch.float16,
         variant="fp16"
     )
-    print('3')
-    #    g_pipe.to("cuda")
-    g_pipe.to("cpu")
-    print('4')
+    g_pipe.to("cuda")
 
     # Specify the custom handler
     handler = MyHandler

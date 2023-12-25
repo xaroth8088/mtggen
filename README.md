@@ -4,4 +4,8 @@
 _Obviously not affiliated with Wizards of the Coast, Hasbro, or any other rights holders_
 
 # How to run
-Don't.  At least, for now - I'm still fiddling with stuff.
+```
+    conda env create -n mtggen -f environment.yml
+    conda activate mtggen
+    python main.py --help
+```

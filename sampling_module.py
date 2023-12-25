@@ -19,7 +19,7 @@ def sample_from_pretrained_model(
 
     model = load_model(model_path)
 
-    for _ in range(5):
+    for _ in range(1):
         generated_text = generate_text(
             max_output_tokens,
             model,
@@ -52,7 +52,7 @@ def generate_text(max_output_tokens, model, vectorizer, temperature, show_token_
 
     while len(output_sequence) < max_output_tokens and output_sequence[-1:][0] != end_token:
         # Call model.predict() to get the prediction weights
-        predictions = model.predict(context_sequence, verbose=0)[0]
+        predictions = model.predict(context_sequence)[0]
 
         # Use the prediction to select the next character index
         predicted_index = sample_with_temperature(predictions, temperature)
@@ -63,7 +63,8 @@ def generate_text(max_output_tokens, model, vectorizer, temperature, show_token_
         # Advance the context by one
         context_sequence = np.append(context_sequence, predicted_index)[-(max_sequence_length):].reshape(1, -1)
 
-    print("max_output_tokens:", max_output_tokens, "len:", len(output_sequence), "end of output_sequence:", output_sequence[-1:][0], "vs:", end_token)
+    print("max_output_tokens:", max_output_tokens, "len:", len(output_sequence), "end of output_sequence:",
+          output_sequence[-1:][0], "vs:", end_token)
 
     return unvectorize(output_sequence, vectorizer, show_token_breaks)
 

@@ -2,6 +2,9 @@
 corpus/
 *.keras
 
+# Tensorboard
+logs/
+
 # IDEA
 .idea/
 
