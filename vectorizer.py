@@ -16,9 +16,9 @@ def build_vectorizer(dataset):
         output_mode='int',
         output_sequence_length=None
     )
+    print("Building vectorizer... (this may take a while)")
     vectorize_layer.adapt(dataset)
 
-    print(vectorize_layer.get_vocabulary())
     print(f'Vocab len: {len(vectorize_layer.get_vocabulary())}')
 
     return vectorize_layer

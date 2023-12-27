@@ -85,6 +85,43 @@ def replace_mdashes(text):
     return sub('--', '-', text)
 
 
+def get_sequence_length_histogram(preprocessed_cards):
+    card_lengths = {}
+    for card in preprocessed_cards:
+        if len(card) in card_lengths:
+            card_lengths[len(card)] += 1
+        else:
+            card_lengths[len(card)] = 1
+    return card_lengths
+
+
+def get_token_frequencies(preprocessed_cards):
+    token_frequencies = {}
+    for card in preprocessed_cards:
+        for token in card:
+            if token in token_frequencies:
+                token_frequencies[token] += 1
+            else:
+                token_frequencies[token] = 1
+    return token_frequencies
+
+
+def get_nth_percentile(data, percentile):
+    # Flatten the frequency data
+    flattened_data = []
+    for length, freq in data.items():
+        flattened_data.extend([length] * freq)
+
+    # Sort the flattened data
+    sorted_data = sorted(flattened_data)
+
+    # Calculate the index for the nth percentile
+    index = int(round(percentile / 100 * (len(sorted_data) - 1)))
+
+    # Find and return the nth percentile value
+    return sorted_data[index]
+
+
 def main():
     parser = argparse.ArgumentParser(description='Prepare MTG JSON file for training')
 
@@ -135,7 +172,7 @@ def main():
             if "text" in card:
                 card["text"] = replace_card_name_with_tilde(card["text"], card["name"])
                 card["text"] = sub(r'\(.+?\)', '', card["text"])  # Strip reminder text
-                card["text"] = card["text"].replace('\n', '\\n') # Standardize the newline characters in the rules text
+                card["text"] = card["text"].replace('\n', '\\n')  # Standardize the newline characters in the rules text
 
             preprocessed_cards.append(card)
 
@@ -144,7 +181,31 @@ def main():
 
     # Pre-tokenize the cards
     preprocessed_cards = [
-        '^'.join(pre_tokenize_card(card))
+        pre_tokenize_card(card)
+        for card in preprocessed_cards
+    ]
+
+    # Filter any card that contains unique tokens
+    # Identify tokens with keepable frequency
+    token_frequencies = get_token_frequencies(preprocessed_cards)
+    tokens_with_more_than_one_freq = {token for token, freq in token_frequencies.items() if freq > 1}
+
+    # Filter out cards that contain any low-frequency token
+    preprocessed_cards = [card for card in preprocessed_cards if
+                      all(token in tokens_with_more_than_one_freq for token in card)]
+
+    # Cards will have a long tail on maximum length, and training/inference can be sped up quite a bit by picking a
+    # rational maximum card length (90th percentile)
+    # TODO: make this cutoff configurable, CLI-passed
+    stats = get_sequence_length_histogram(preprocessed_cards)
+    cutoff_sequence_length = get_nth_percentile(stats, 90)
+    preprocessed_cards = [
+        card for card in preprocessed_cards if len(card) <= cutoff_sequence_length
+    ]
+
+    # Prepare the cards as ^-separated
+    preprocessed_cards = [
+        '^'.join(card)
         for card in preprocessed_cards
     ]
 
@@ -185,7 +246,7 @@ def pre_tokenize_card(card):
                 #       don't _capture_ the \W's
                 regex = (
                         r'|'.join(rules_templates)  # rules templates
-                        + r'|\\n'   # newlines, esp. in text
+                        + r'|\\n'  # newlines, esp. in text
                         + r'|\{.+?}'  # mana symbols
                         + r'|\w+'  # whole words
                         + r'|\W'  # non-word characters

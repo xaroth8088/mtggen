@@ -1,6 +1,7 @@
 from os.path import exists
 
 import tensorflow as tf
+from tqdm import tqdm
 from tensorflow.data import TextLineDataset
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
@@ -102,7 +103,7 @@ def preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size
     )
 
     num_lines = 0
-    for _ in dataset:
+    for _ in tqdm(dataset, desc="Counting dataset lines"):
         num_lines += 1
 
     # Setup for batching
@@ -153,6 +154,7 @@ def train_model(
     # Pre-process the dataset
     training_dataset, validation_dataset = preprocess_dataset(dataset, vectorize_layer, max_sequence_length, batch_size)
 
+    # TODO: make patience configurable via CLI
     model.fit(
         training_dataset,
         validation_data=validation_dataset,
@@ -166,7 +168,7 @@ def train_model(
             LambdaCallback(
                 on_epoch_end=lambda epoch, logs: on_epoch_end(epoch, model, vectorize_layer, sample_every_n_epochs)
             ),
-            EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
+            EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
         ]
     )
 

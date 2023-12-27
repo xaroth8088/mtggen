@@ -42,12 +42,13 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'image')
             self.end_headers()
 
-            prompt = f'Artwork named "{params["name"][0]}", {",".join(params["type[]"])}'
+            # TODO: fiddle with the prompt and style some more
+            prompt = f'"{params["name"][0]}", {",".join(params["type[]"])}'
             print(prompt)
 
             image = g_pipe(
                 prompt=prompt,
-                prompt_2="fantasy",
+                prompt_2="magic",
                 num_inference_steps=2,
                 guidance_scale=0.0,
                 width=768,
