@@ -16,6 +16,8 @@
     --text-bar-background: rgba(255, 255, 255, 0.8);
 }
 
+::-webkit-scrollbar { display: none; }
+
 body {
     box-sizing: border-box;
     margin: 0;
@@ -31,7 +33,7 @@ body {
 }
 
 .card {
-    font-family: 'EB Garamond', serif;
+    font-family: 'EB Garamond', 'Noto Color Emoji', serif;
     font-size: 16px;
     width: 238px;
     height: 333px;

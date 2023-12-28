@@ -83,6 +83,14 @@ def unvectorize(output_sequence, vectorizer, show_token_breaks):
     ])
 
     generated_text = generated_text.replace('\n', '\\n')
+    # TODO: Sometimes, generated_text has "s in it which need to be escaped.
+    # TODO: This is potentially fixable by changing the way we tokenize, so that instead of being JSON fragments it's
+    #       a more lenient structure like:
+    #         <JSON key token><arbitrary string><end value marker>
+    #       where arrays of values would be like:
+    #         <JSON key token><arbitrary string><end value marker><another arbitrary string><end value marker>
+    #       then, when translating back to JSON, we could have knowledge of which keys need arrays vs. single strings,
+    #       and just concat together anything that needs a single string.
 
     if show_token_breaks is False:
         try:
