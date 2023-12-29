@@ -34,11 +34,19 @@ Handlebars.registerHelper('card_text', (text) => {
     return text;
 })
 
-Handlebars.registerHelper('card_image', (name, types) => {
+Handlebars.registerHelper('card_image', (name, types, subtypes, supertypes) => {
     const url = new URL('../../card-image.png', document.baseURI);
     const params = new URLSearchParams();
     params.append("name", name);
-    types.forEach(type => params.append("type[]", type));
+    if (types !== undefined) {
+        types.forEach(type => params.append("type[]", type));
+    }
+    if (subtypes !== undefined) {
+        subtypes.forEach(subtype => params.append("subtype[]", subtype));
+    }
+    if (supertypes !== undefined) {
+        supertypes.forEach(supertype => params.append("supertype[]", supertype));
+    }
     url.search = params;
     return url.toString()
 })

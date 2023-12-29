@@ -43,12 +43,24 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
 
             # TODO: fiddle with the prompt and style some more
-            prompt = f'"{params["name"][0]}", {",".join(params["type[]"])}'
+            # Repeat the name, to give it greater weight in the prompt
+            prompt_items = [f'"{params["name"][0]}"'] * 8
+            prompt_items.extend([
+                "art by Alayna Lemmer",
+                "art by Alex Horley"
+            ])
+            if "type[]" in params:
+                prompt_items.extend(params["type[]"])
+            if "subtype[]" in params:
+                prompt_items.extend(params["subtype[]"] * 4)
+            if "supertype[]" in params:
+                prompt_items.extend(params["supertype[]"])
+
+            prompt = ", ".join(prompt_items)
             print(prompt)
 
             image = g_pipe(
                 prompt=prompt,
-                prompt_2="magic",
                 num_inference_steps=2,
                 guidance_scale=0.0,
                 width=768,

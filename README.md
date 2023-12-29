@@ -32,7 +32,7 @@ cards you want, and it'll generate them and arrange them into 10x7 sheets of car
 take 20-30 seconds to generate each card (or ~30 min. per sheet), so plan your day accordingly.
 
 It's also important to note that a card may not always be fully generated, depending on how well your checkpoint was
-trained. In these cases, you'll get a placeholder card instead of a generated one.
+trained. In these cases, you'll get a blank card instead of a generated one.
 
 ### One terminal for the webserver...
 ```bash

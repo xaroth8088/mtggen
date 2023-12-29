@@ -4,7 +4,7 @@ import tensorflow as tf
 from tqdm import tqdm
 from tensorflow.data import TextLineDataset
 from tensorflow.keras.callbacks import LambdaCallback, EarlyStopping, ModelCheckpoint
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
+from tensorflow.keras.layers import Embedding, GRU, Dense
 from tensorflow.keras.models import Sequential, load_model
 
 from sampling_module import generate_text
@@ -24,8 +24,8 @@ def create_model(vocab_size, max_sequence_length, num_units, num_layers, embeddi
 
     # Add LSTM layers
     for _ in range(num_layers - 1):
-        model.add(Bidirectional(LSTM(num_units, return_sequences=True)))
-    model.add(Bidirectional(LSTM(num_units)))
+        model.add(GRU(num_units, return_sequences=True))
+    model.add(GRU(num_units))
 
     # Add the Dense layer for output
     model.add(Dense(vocab_size, activation='softmax'))
