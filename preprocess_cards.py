@@ -219,8 +219,22 @@ def pre_tokenize_card(card):
     # Start the object
     tokens = ['{']
 
-    # TODO: explode out the \w+|\W thing so that we can have a little more control on what counts as a word barrier
-    #       (e.g. apostrophes are considered a word barrier right now, which isn't desirable)
+    # Custom word boundaries
+    word_boundaries = [r'\s', r'\.', r'"', r'\?', r'\!', r',']
+    lookbehind = r"(?:(?<=" + "|".join(word_boundaries) + r")|(?<=\n))"
+    lookahead = r"(?=" + "|".join(word_boundaries + [r'\\n']) + ")"
+    bounded_regex_list = [lookbehind + regex + lookahead for regex in rules_templates]
+    bounded_regex_list.extend([
+        r'\{.+?}',
+        r'\\n',
+        r'\w+',
+        r'\W'
+    ])
+    # TODO: use word_boundaries instead of \w+ and \W
+    # TODO: it'd be great to use symbols as word boundaries, too.  However, doing this takes us out of regex-land,
+    #       because we can't have a variable-length lookbehind.
+    #       Other mitigations might be feasible, though, such as artificially inserting a space after each symbol
+    #       and then stripping that space back out at the end.
 
     for key, value in card.items():
         tokens.append(f'"{key}":')
@@ -242,16 +256,9 @@ def pre_tokenize_card(card):
             if key == 'name':
                 tokens.extend(list(value))
             else:
-                # TODO: wrap the rules templates in _checks_ for \W on either side, but
-                #       don't _capture_ the \W's
-                regex = (
-                        r'|'.join(rules_templates)  # rules templates
-                        + r'|\\n'  # newlines, esp. in text
-                        + r'|\{.+?}'  # mana symbols
-                        + r'|\w+'  # whole words
-                        + r'|\W'  # non-word characters
-                )
-                tokens.extend(findall(regex, value, re.IGNORECASE))
+                # TODO: strip out the " " (space) token, and just add it back in with a " ".join(tokens) when sampling. (but just for non-name fields)
+                capture = re.findall(r'|'.join(bounded_regex_list), value, re.IGNORECASE)
+                tokens.extend(capture)
             tokens.append('",')
 
     # End the object

@@ -4,14 +4,17 @@
 # Because there can be a lot of overlap in phrasing, they should also be roughly ordered by descending frequency,
 # with more specific phrasings taking precedence over less specific phrasings.
 rules_templates = [
+    r"can't",   # TODO: once we have fully custom word boundaries in place, we can remove this
+    r"creature's",   # TODO: once we have fully custom word boundaries in place, we can remove this
+    r"~'s",   # TODO: once we have fully custom word boundaries in place, we can remove this
+    r'\\\\n',
     r'you control', # 4729
     r'target creature', # 3749
     r'you may', # 3721
     r'until end of turn', # 3390
     r'when ~ enters the battlefield', # 2265
-    r'put a .*? counter on', #1051
-    r'\+1/\+1 counters?', # 2010 (except what's covered by the above)
-    r'\+1/\+1', # 2948, minus the 2010 from above
+    r'[^ ]+ counters?',
+    r'[-+][0-9]+/[-+][0-9]+', # 2948, minus the 2010 from above
     r'your graveyard', # 1886
     r'your hand', # 1886
     r'draw \w+ cards?', # 1886
@@ -44,8 +47,6 @@ rules_templates = [
     r'the top card of your library', # 354
     r'scry [0-9]+', #334
     r'add one mana', # 304
-    r'-1/-1 counters?',  # 292 (except what's covered above
-    r'-1/-1',  # 420, minus the 292 from above
     r'your opponents control',  # 243
     r'your opponents',  # 327 minus the 243 from 'your opponents control', above
     r'bottom of your library', #257

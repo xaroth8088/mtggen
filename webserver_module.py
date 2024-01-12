@@ -47,12 +47,16 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             prompt_items = [f'"{params["name"][0]}"'] * 8
             prompt_items.extend([
                 "art by Alayna Lemmer",
-                "art by Alex Horley"
+                "art by Alex Horley",
+                "art by Even Mehl Amundsen",
+                "art by Greg Staples",
+                "art by Howard Lyon",
+                "art by Igor Kieryluk"
             ])
             if "type[]" in params:
                 prompt_items.extend(params["type[]"])
             if "subtype[]" in params:
-                prompt_items.extend(params["subtype[]"] * 4)
+                prompt_items.extend(params["subtype[]"] * 8)
             if "supertype[]" in params:
                 prompt_items.extend(params["supertype[]"])
 
