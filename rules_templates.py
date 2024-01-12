@@ -14,7 +14,7 @@ rules_templates = [
     r'until end of turn', # 3390
     r'when ~ enters the battlefield', # 2265
     r'[^ ]+ counters?',
-    r'[-+][0-9]+/[-+][0-9]+', # 2948, minus the 2010 from above
+    r'[-+][0-9]+/[-+][0-9]+', # TODO: Maybe the token should be '+x', instead of '+x/+x'
     r'your graveyard', # 1886
     r'your hand', # 1886
     r'draw \w+ cards?', # 1886

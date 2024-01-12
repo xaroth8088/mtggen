@@ -59,6 +59,7 @@ function replaceSymbols(text) {
         .replace(/\{R\}/g, '<span class="symbol symbol_R"><span class="emoji">🔥</span></span>')
         .replace(/\{G\}/g, '<span class="symbol symbol_G"><span class="emoji">🌳</span></span>')
         .replace(/\{S\}/g, '<span class="symbol symbol_S"><span class="emoji">❄️</span></span>')
+        .replace(/\{E\}/g, '<span class="symbol symbol_E"><span class="emoji">⚡</span></span>')
         .replace(/\{T\}/g, '<span class="symbol symbol_tap">↷</span>')
         .replace(/\{\d+\}/g, match => `<span class="symbol">${match.slice(1, -1)}</span>`)
         .replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
