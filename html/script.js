@@ -62,12 +62,20 @@ function replaceSymbols(text) {
         .replace(/\{T\}/g, '<span class="symbol symbol_tap">↷</span>')
         .replace(/\{\d+\}/g, match => `<span class="symbol">${match.slice(1, -1)}</span>`)
         .replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
+}
 
-    // text = text.replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
-    // return text;
+function resizeText(selector) {
+    const container = document.body.querySelector(selector);
+    const currentFontSize = parseFloat(
+        getComputedStyle(container).fontSize.replace('px', '')
+    );
+    textFit(container, {minFontSize: 1, maxFontSize: currentFontSize});
 }
 
 const source = document.getElementById("card-template").innerHTML;
 const template = Handlebars.compile(source);
 
 document.getElementById("card").innerHTML = template(data);
+resizeText('#card .name')
+resizeText('#card .type')
+resizeText('#card .text')

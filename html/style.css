@@ -275,6 +275,8 @@ body {
     font-weight: 700;
     color: #000;
     margin: 0;
+    overflow: hidden;
+    height: 1em;
 }
 
 .mana {
@@ -389,6 +391,8 @@ span.emoji {
 
 .type {
     flex-grow: 1;
+    height: 1.25em;
+    overflow: hidden;
 }
 
 .rarity {
@@ -424,6 +428,8 @@ span.emoji {
     flex-grow: 1;
     line-height: 1em;
     background-color: var(--text-background);
+    height: 9.5em;
+    overflow: hidden;
 }
 
 .line_break {
