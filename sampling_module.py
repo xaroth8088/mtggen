@@ -91,6 +91,8 @@ def unvectorize(output_sequence, vectorizer, show_token_breaks):
     #         <JSON key token><arbitrary string><end value marker><another arbitrary string><end value marker>
     #       then, when translating back to JSON, we could have knowledge of which keys need arrays vs. single strings,
     #       and just concat together anything that needs a single string.
+    #       NOTE: when doing this with rules text, we can split lines by \n so that it looks like multiple entries,
+    #       and then when we join them we can insert the newline again
 
     if show_token_breaks is False:
         try:
