@@ -17,3 +17,4 @@ dependencies:
     - diffusers==0.24.0
     - transformers==4.36.2
     - accelerate==0.25.0
+    - compel==2.0.2

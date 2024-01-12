@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 import torch
 from diffusers import AutoPipelineForText2Image
 from tensorflow.keras.models import load_model
-
+from compel import Compel, ReturnedEmbeddingsType
 from sampling_module import generate_text
 from vectorizer import load_vectorizer
 
@@ -17,6 +17,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         global g_temperature
         global g_max_output_tokens
         global g_pipe
+        global g_compel
 
         parsed_path = urlparse(self.path)
         params = parse_qs(parsed_path.query)
@@ -42,29 +43,35 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'image')
             self.end_headers()
 
-            # TODO: fiddle with the prompt and style some more
-            # Repeat the name, to give it greater weight in the prompt
-            prompt_items = [f'"{params["name"][0]}"'] * 8
-            prompt_items.extend([
-                "art by Alayna Lemmer",
-                "art by Alex Horley",
-                "art by Even Mehl Amundsen",
-                "art by Greg Staples",
-                "art by Howard Lyon",
-                "art by Igor Kieryluk"
-            ])
+            prompt_items = [f'({params["name"][0]})+++']
             if "type[]" in params:
-                prompt_items.extend(params["type[]"])
+                prompt_items.extend([
+                    f'({type})'
+                    for type in params["type[]"]
+                ])
             if "subtype[]" in params:
-                prompt_items.extend(params["subtype[]"] * 8)
+                prompt_items.extend([
+                    f'({subtype})+++'
+                    for subtype in params["subtype[]"]
+                ])
             if "supertype[]" in params:
-                prompt_items.extend(params["supertype[]"])
+                prompt_items.extend([
+                    f'({supertype})'
+                    for supertype in params["supertype[]"]
+                ])
+            prompt_items.extend([
+                "(art by Alayna Lemmer)",
+                "(art by Alex Horley)",
+                "(art by Even Mehl Amundsen)"
+            ])
 
             prompt = ", ".join(prompt_items)
             print(prompt)
+            conditioning, pooled = g_compel(prompt)
 
             image = g_pipe(
-                prompt=prompt,
+                prompt_embeds=conditioning,
+                pooled_prompt_embeds=pooled,
                 num_inference_steps=2,
                 guidance_scale=0.0,
                 width=768,
@@ -102,6 +109,7 @@ def start_server(
     global g_temperature
     global g_max_output_tokens
     global g_pipe
+    global g_compel
 
     g_vectorizer = load_vectorizer(vectorizer_path)
     g_model = load_model(model_path)
@@ -113,9 +121,18 @@ def start_server(
     g_pipe = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/sdxl-turbo",
         torch_dtype=torch.float16,
-        variant="fp16"
+        variant="fp16",
+        use_safetensors=True
     )
     g_pipe.to("cuda")
+
+    g_compel = Compel(
+        tokenizer=[g_pipe.tokenizer, g_pipe.tokenizer_2],
+        text_encoder=[g_pipe.text_encoder, g_pipe.text_encoder_2],
+        returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+        requires_pooled=[False, True],
+        device='cuda'
+    )
 
     # Specify the custom handler
     handler = MyHandler
