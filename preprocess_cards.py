@@ -169,6 +169,7 @@ def main():
             card = filter_unwanted_keys(card)
             card = filter_empty_values(card)
             # TODO: strip the keywords that are only thematic, like "Metalcraft", "Landfall", etc.
+            # TODO: there are some cards that use bullets, and others that use asterisks.  Standardize on one (probably bullets)
             card = json_walker(card, remove_reminder_text)
             card = json_walker(card, unidecode)
             card = json_walker(card, replace_mdashes)
