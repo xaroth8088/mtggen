@@ -168,6 +168,7 @@ def main():
 
             card = filter_unwanted_keys(card)
             card = filter_empty_values(card)
+            # TODO: strip the keywords that are only thematic, like "Metalcraft", "Landfall", etc.
             card = json_walker(card, remove_reminder_text)
             card = json_walker(card, unidecode)
             card = json_walker(card, replace_mdashes)
