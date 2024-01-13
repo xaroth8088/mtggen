@@ -7,6 +7,7 @@ from tqdm import tqdm
 from unidecode import unidecode
 
 from rules_templates import rules_templates
+from vectorizer import CARD_END, KEY_START, VALUE_START, TOKEN_DELIMITER
 
 
 def filter_unwanted_keys(card):
@@ -204,9 +205,9 @@ def main():
         card for card in preprocessed_cards if len(card) <= cutoff_sequence_length
     ]
 
-    # Prepare the cards as ^-separated
+    # Mash the tokens into a string
     preprocessed_cards = [
-        '^'.join(card)
+        TOKEN_DELIMITER.join(card)
         for card in preprocessed_cards
     ]
 
@@ -214,12 +215,10 @@ def main():
     with open(args.output_path, 'w', encoding='utf-8') as file:
         for card in preprocessed_cards:
             file.write(card)
+            file.write('\n')
 
 
 def pre_tokenize_card(card):
-    # Start the object
-    tokens = ['{']
-
     # Custom word boundaries
     word_boundaries = [r'\s', r'\.', r'"', r'\?', r'\!', r',']
     lookbehind = r"(?:(?<=" + "|".join(word_boundaries) + r")|(?<=\n))"
@@ -237,36 +236,31 @@ def pre_tokenize_card(card):
     #       Other mitigations might be feasible, though, such as artificially inserting a space after each symbol
     #       and then stripping that space back out at the end.
 
-    for key, value in card.items():
-        tokens.append(f'"{key}":')
-        if isinstance(value, list):
-            if len(value) == 0:
-                tokens.append('[]')
-                continue
+    # Tokenize it!
+    tokens = []
 
-            tokens.append('["')
-            list_tokens = []
-            for element in value:
-                list_tokens.extend(findall(r'\w+|\W', str(element)))
-                list_tokens.append('","')
-            list_tokens[-1] = '"],'
-            tokens.extend(list_tokens)
-        else:
-            tokens.append('"')
+    # TODO: Randomizing the key order would probably permit arbitrary key/value seeding, and may help training overall.  Maybe mix them during pre-vectorization?  Maybe here?
+
+    for key, values in card.items():
+        tokens.append(KEY_START)
+        tokens.append(key)
+
+        # Anything multi-line can be thought of as being multiple values, which will make formatting easier on the other end
+        if type(values) != list:
+            values = values.split('\\n')
+
+        for item in values:
+            tokens.append(VALUE_START)
+
             # Let's let names be arbitrary constructions, instead of copied words
             if key == 'name':
-                tokens.extend(list(value))
+                tokens.extend(list(item))
             else:
                 # TODO: strip out the " " (space) token, and just add it back in with a " ".join(tokens) when sampling. (but just for non-name fields)
-                capture = re.findall(r'|'.join(bounded_regex_list), value, re.IGNORECASE)
+                capture = re.findall(r'|'.join(bounded_regex_list), item, re.IGNORECASE)
                 tokens.extend(capture)
-            tokens.append('",')
 
-    # End the object
-    last_token = tokens[-1]
-    last_token = last_token[:-1]  # Remove the comma
-    last_token += "}\n"  # Close the object
-    tokens[-1] = last_token
+    tokens.append(CARD_END)
 
     return tokens
 

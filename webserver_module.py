@@ -51,7 +51,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 ])
             if "subtype[]" in params:
                 prompt_items.extend([
-                    f'({subtype})+++'
+                    f'({subtype})++'
                     for subtype in params["subtype[]"]
                 ])
             if "supertype[]" in params:

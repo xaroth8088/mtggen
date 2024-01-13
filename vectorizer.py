@@ -2,10 +2,15 @@ import tensorflow as tf
 from tensorflow.keras.layers import TextVectorization
 from tensorflow.keras.saving import register_keras_serializable
 
+TOKEN_DELIMITER = '^'
+CARD_END = '$'
+KEY_START = '@'
+VALUE_START = '#'
+
 
 @register_keras_serializable('mtggen')
 def custom_splitter(text):
-    return tf.strings.split(text, '^')
+    return tf.strings.split(text, TOKEN_DELIMITER)
 
 
 def build_vectorizer(dataset):

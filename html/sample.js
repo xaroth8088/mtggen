@@ -1,16 +1,16 @@
 // export default {
-//     "manacost": "{3}{S}{B}{U}{R}{G}{W}",
+//     "manacost": "{3}{s}{b}{u}{r}{g}{w}",
 //     "name": "Sinister'S Commantler",
 //     "power": "3",
 //     "rarity": "Common",
 //     "subtypes": ["Ogre", "Warrior", "Warrior", "Warrior", "Warrior", "Warrior", "Warrior", "Warrior", "Warrior", "Warrior"],
-//     "text": "{T}: Whenever Sinister'S Commantler Attacks, If you control a aetherborn, You gain 1 life and draw a card. I'm baby kickstarter ennui thundercats woke lumbersexual next level. Tattooed chicharrones palo santo vinyl hoodie. Food truck kombucha palo santo lyft pickled hell of sriracha mukbang lumbersexual blackbird spyplane. Photo booth gatekeep kinfolk godard. Vegan jean shorts 3 wolf moon ennui gochujang cupping. Tote bag vinyl single-origin coffee, readymade seitan mlkshk vape neutral milk hotel yuccie cloud bread same literally.",
+//     "text": "{t}: Whenever Sinister'S Commantler Attacks, If you control a aetherborn, You gain 1 life and draw a card. I'm baby kickstarter ennui thundercats woke lumbersexual next level. Tattooed chicharrones palo santo vinyl hoodie. Food truck kombucha palo santo lyft pickled hell of sriracha mukbang lumbersexual blackbird spyplane. Photo booth gatekeep kinfolk godard. Vegan jean shorts 3 wolf moon ennui gochujang cupping. Tote bag vinyl single-origin coffee, readymade seitan mlkshk vape neutral milk hotel yuccie cloud bread same literally.",
 //     "toughness": "3",
 //     "types": ["Creature"]
 // }
 
 export default {
-    "manacost": "{2}{R}",
+    "manacost": "{2}{r}",
     "name": "Candy Battle-Houncer",
     "power": "3",
     "rarity": "Common",

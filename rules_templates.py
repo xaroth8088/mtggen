@@ -13,7 +13,7 @@ rules_templates = [
     r'you may', # 3721
     r'until end of turn', # 3390
     r'when ~ enters the battlefield', # 2265
-    r'[^ ]+ counters?',
+    r'[^ ]+ counters?', # TODO: BUG: this matches things like "- counter"
     r'[-+][0-9]+/[-+][0-9]+', # TODO: Maybe the token should be '+x', instead of '+x/+x'
     r'your graveyard', # 1886
     r'your hand', # 1886
@@ -22,7 +22,7 @@ rules_templates = [
     r'deals [0-9x]+ damage', #1389
     r'creature tokens?', #1364
     r'creature you control', # 1340
-    r'discard .*? cards?', # 860
+    r'discard .*? cards?', # TODO: BUG: this matches things like "discard ~: search your library for a basic land card"
     r'as long as', #823
     r'that creature', #796
     r'1/1', # 774

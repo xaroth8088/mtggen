@@ -53,14 +53,14 @@ Handlebars.registerHelper('card_image', (name, types, subtypes, supertypes) => {
 
 function replaceSymbols(text) {
     return text
-        .replace(/\{W\}/g, '<span class="symbol symbol_W"><span class="emoji">☀</span></span>')
-        .replace(/\{U\}/g, '<span class="symbol symbol_U"><span class="emoji">💧</span></span>')
-        .replace(/\{B\}/g, '<span class="symbol symbol_B"><span class="emoji">💀</span></span>')
-        .replace(/\{R\}/g, '<span class="symbol symbol_R"><span class="emoji">🔥</span></span>')
-        .replace(/\{G\}/g, '<span class="symbol symbol_G"><span class="emoji">🌳</span></span>')
-        .replace(/\{S\}/g, '<span class="symbol symbol_S"><span class="emoji">❄️</span></span>')
-        .replace(/\{E\}/g, '<span class="symbol symbol_E"><span class="emoji">⚡</span></span>')
-        .replace(/\{T\}/g, '<span class="symbol symbol_tap">↷</span>')
+        .replace(/\{w\}/g, '<span class="symbol symbol_w"><span class="emoji">☀</span></span>')
+        .replace(/\{u\}/g, '<span class="symbol symbol_u"><span class="emoji">💧</span></span>')
+        .replace(/\{b\}/g, '<span class="symbol symbol_b"><span class="emoji">💀</span></span>')
+        .replace(/\{r\}/g, '<span class="symbol symbol_r"><span class="emoji">🔥</span></span>')
+        .replace(/\{g\}/g, '<span class="symbol symbol_g"><span class="emoji">🌳</span></span>')
+        .replace(/\{s\}/g, '<span class="symbol symbol_s"><span class="emoji">❄️</span></span>')
+        .replace(/\{e\}/g, '<span class="symbol symbol_e"><span class="emoji">⚡</span></span>')
+        .replace(/\{t\}/g, '<span class="symbol symbol_tap">↷</span>')
         .replace(/\{\d+\}/g, match => `<span class="symbol">${match.slice(1, -1)}</span>`)
         .replaceAll(/{(.+?)}/g, `<span class="symbol symbol_$1">$1</span>`);
 }

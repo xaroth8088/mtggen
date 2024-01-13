@@ -55,36 +55,36 @@ body {
     z-index: 2;
 }
 
-.card.background_G {
+.card.background_g {
     background-image: url("backgrounds/green_background.png");
     background-color: var(--green);
 }
 
-.card.background_B {
+.card.background_b {
     background-image: url("backgrounds/black_background.png");
     background-color: var(--black);
 }
 
-.card.background_U {
+.card.background_u {
     background-image: url("backgrounds/blue_background.png");
     background-color: var(--blue);
 }
 
-.card.background_R {
+.card.background_r {
     background-image: url("backgrounds/red_background.png");
     background-color: var(--red);
 }
 
-.card.background_W {
+.card.background_w {
     background-image: url("backgrounds/white_background.png");
     background-color: var(--white);
 }
 
-.card.background_G.background_B {
+.card.background_g.background_b {
     background-image: url("backgrounds/green_background.png");
 }
 
-.card.background_G.background_B::before {
+.card.background_g.background_b::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/black_background.png");
@@ -95,11 +95,11 @@ body {
     right: 0;
 }
 
-.card.background_G.background_U {
+.card.background_g.background_u {
     background-image: url("backgrounds/green_background.png");
 }
 
-.card.background_G.background_U::before {
+.card.background_g.background_u::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/blue_background.png");
@@ -110,11 +110,11 @@ body {
     right: 0;
 }
 
-.card.background_G.background_R {
+.card.background_g.background_r {
     background-image: url("backgrounds/green_background.png");
 }
 
-.card.background_G.background_R::before {
+.card.background_g.background_r::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/red_background.png");
@@ -125,11 +125,11 @@ body {
     right: 0;
 }
 
-.card.background_G.background_W {
+.card.background_g.background_w {
     background-image: url("backgrounds/green_background.png");
 }
 
-.card.background_G.background_W::before {
+.card.background_g.background_w::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/white_background.png");
@@ -140,11 +140,11 @@ body {
     right: 0;
 }
 
-.card.background_B.background_U {
+.card.background_b.background_u {
     background-image: url("backgrounds/black_background.png");
 }
 
-.card.background_B.background_U::before {
+.card.background_b.background_u::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/blue_background.png");
@@ -155,11 +155,11 @@ body {
     right: 0;
 }
 
-.card.background_B.background_R {
+.card.background_b.background_r {
     background-image: url("backgrounds/black_background.png");
 }
 
-.card.background_B.background_R::before {
+.card.background_b.background_r::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/red_background.png");
@@ -170,11 +170,11 @@ body {
     right: 0;
 }
 
-.card.background_B.background_W {
+.card.background_b.background_w {
     background-image: url("backgrounds/black_background.png");
 }
 
-.card.background_B.background_W::before {
+.card.background_b.background_w::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/white_background.png");
@@ -185,11 +185,11 @@ body {
     right: 0;
 }
 
-.card.background_U.background_R {
+.card.background_u.background_r {
     background-image: url("backgrounds/blue_background.png");
 }
 
-.card.background_U.background_R::before {
+.card.background_u.background_r::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/red_background.png");
@@ -200,11 +200,11 @@ body {
     right: 0;
 }
 
-.card.background_U.background_W {
+.card.background_u.background_w {
     background-image: url("backgrounds/blue_background.png");
 }
 
-.card.background_U.background_W::before {
+.card.background_u.background_w::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/white_background.png");
@@ -215,11 +215,11 @@ body {
     right: 0;
 }
 
-.card.background_R.background_W {
+.card.background_r.background_w {
     background-image: url("backgrounds/red_background.png");
 }
 
-.card.background_R.background_W::before {
+.card.background_r.background_w::before {
     content: '';
     mask: linear-gradient(45deg, #000000 33%, transparent);
     background-image: url("backgrounds/white_background.png");
@@ -230,29 +230,29 @@ body {
     right: 0;
 }
 
-.card.background_B.background_U.background_G,
-.card.background_R.background_B.background_G,
-.card.background_R.background_B.background_U,
-.card.background_R.background_U.background_G,
-.card.background_R.background_W.background_B,
-.card.background_R.background_W.background_G,
-.card.background_R.background_W.background_U,
-.card.background_W.background_B.background_G,
-.card.background_W.background_B.background_U,
-.card.background_W.background_U.background_G {
+.card.background_b.background_u.background_g,
+.card.background_r.background_b.background_g,
+.card.background_r.background_b.background_u,
+.card.background_r.background_u.background_g,
+.card.background_r.background_w.background_b,
+.card.background_r.background_w.background_g,
+.card.background_r.background_w.background_u,
+.card.background_w.background_b.background_g,
+.card.background_w.background_b.background_u,
+.card.background_w.background_u.background_g {
     background-image: url("backgrounds/gold_background.png") !important;
 }
 
-.card.background_B.background_U.background_G::before,
-.card.background_R.background_B.background_G::before,
-.card.background_R.background_B.background_U::before,
-.card.background_R.background_U.background_G::before,
-.card.background_R.background_W.background_B::before,
-.card.background_R.background_W.background_G::before,
-.card.background_R.background_W.background_U::before,
-.card.background_W.background_B.background_G::before,
-.card.background_W.background_B.background_U::before,
-.card.background_W.background_U.background_G::before {
+.card.background_b.background_u.background_g::before,
+.card.background_r.background_b.background_g::before,
+.card.background_r.background_b.background_u::before,
+.card.background_r.background_u.background_g::before,
+.card.background_r.background_w.background_b::before,
+.card.background_r.background_w.background_g::before,
+.card.background_r.background_w.background_u::before,
+.card.background_w.background_b.background_g::before,
+.card.background_w.background_b.background_u::before,
+.card.background_w.background_u.background_g::before {
     display: none !important;
 }
 
@@ -308,53 +308,53 @@ span.emoji {
     background-color: var(--green) !important;
 }
 
-.symbol_G .emoji {
+.symbol_g .emoji {
     top: -0.7px;
     left: -0.7px;
 }
 
-.symbol_W {
+.symbol_w {
     background-color: var(--white) !important;
 }
 
-.symbol_W .emoji {
+.symbol_w .emoji {
     top: -0.6px;
     left: 0.2px;
 }
 
-.symbol_B {
+.symbol_b {
     background-color: var(--black) !important;
 }
 
-.symbol_B .emoji {
+.symbol_b .emoji {
     top: -0.9px;
     left: -0.6px;
 }
 
-.symbol_U {
+.symbol_u {
     background-color: var(--blue) !important;
 }
 
-.symbol_U .emoji {
+.symbol_u .emoji {
     top: -0.7px;
     left: -0.4px;
     filter: grayscale(1) brightness(0);
 }
 
-.symbol_R {
+.symbol_r {
     background-color: var(--red) !important;
 }
 
-.symbol_R .emoji {
+.symbol_r .emoji {
     top: -0.5px;
     left: -0.5px;
 }
 
-.symbol_S {
+.symbol_s {
     background-color: var(--gray) !important;
 }
 
-.symbol_S .emoji {
+.symbol_s .emoji {
     top: -0.3px;
     left: -1.2px;
 }
@@ -398,7 +398,8 @@ span.emoji {
 .rarity {
     font-family: cursive;
     -webkit-text-stroke-color: black;
-    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-width: 0.4px;
+    font-size: 1.3em;
     color: var(--gray);
 }
 
