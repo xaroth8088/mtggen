@@ -144,7 +144,9 @@ def main():
     for expansion in tqdm(data["data"].values()):
         for card in expansion["cards"]:
             # Skip card entries that we don't want in our training set
-            if "side" in card and card["side"] != "a":
+            if "side" in card:
+                # TODO: Support dual-face cards
+                # TODO: Support split cards
                 continue
 
             if "modern" not in card["legalities"]:
@@ -159,10 +161,9 @@ def main():
             if "name" not in card:
                 continue
 
-            # TODO: Don't include dual-face or split cards
-            # TODO: Support dual-face cards
-            # TODO: Support split cards
-            # TODO: Support battles
+            if "Battle" in card["types"]:
+                # TODO: Support battles
+                continue
 
             card = filter_unwanted_keys(card)
             card = filter_empty_values(card)
